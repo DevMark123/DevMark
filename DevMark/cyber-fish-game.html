@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博朋克：深海进化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 50%, #0d0221 100%);
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-size: 18px;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+            z-index: 100;
+        }
+
+        #ui .level {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #ui .monster-name {
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+            font-size: 16px;
+        }
+
+        #startScreen, #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        #gameOverScreen {
+            display: none;
+        }
+
+        h1 {
+            font-size: 60px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5));
+            margin-bottom: 30px;
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #00ffff, inset 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 30px #00ffff, inset 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .instructions {
+            color: #888;
+            margin-top: 30px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .evolution-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .evolution-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .evolution-text {
+            position: fixed;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ffff;
+            font-size: 14px;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        /* 暂停菜单 */
+        #pauseScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 150;
+            backdrop-filter: blur(10px);
+        }
+
+        #pauseScreen h2 {
+            font-size: 48px;
+            color: #ffff00;
+            text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+            margin-bottom: 40px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .pause-btn {
+            padding: 15px 50px;
+            font-size: 20px;
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #00ffff, inset 0 0 10px rgba(0, 255, 255, 0.2);
+            min-width: 250px;
+        }
+
+        .pause-btn:hover {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 30px #00ffff, inset 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .pause-btn.exit {
+            border-color: #ff006e;
+            color: #ff006e;
+            box-shadow: 0 0 10px #ff006e, inset 0 0 10px rgba(255, 0, 110, 0.2);
+        }
+
+        .pause-btn.exit:hover {
+            background: #ff006e;
+            color: #fff;
+            box-shadow: 0 0 30px #ff006e, inset 0 0 20px rgba(255, 0, 110, 0.5);
+        }
+
+        /* 暂停提示 */
+        .pause-hint {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: rgba(0, 255, 255, 0.5);
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <div class="level">等级: <span id="level">1</span>/10</div>
+        <div class="monster-name" id="monsterName">数据幼虫</div>
+        <div>得分: <span id="score">0</span></div>
+        <div>大小: <span id="size">10</span></div>
+    </div>
+
+    <div class="evolution-text">进化进度</div>
+    <div class="evolution-bar">
+        <div class="evolution-fill" id="evolutionFill"></div>
+    </div>
+
+    <div id="startScreen">
+        <h1>赛博朋克：深海进化</h1>
+        <button class="btn" onclick="startGame()">开始游戏</button>
+        <div class="instructions">
+            <p>使用鼠标控制移动</p>
+            <p>吞噬比你小的生物来进化</p>
+            <p>避开比你大的生物</p>
+            <p>完成10次进化成为深海霸主！</p>
+        </div>
+    </div>
+
+    <div id="gameOverScreen">
+        <h1>游戏结束</h1>
+        <div style="color: #00ffff; font-size: 24px; margin-bottom: 20px;">
+            最终得分: <span id="finalScore">0</span>
+        </div>
+        <div style="color: #ff00ff; font-size: 20px; margin-bottom: 30px;">
+            达到等级: <span id="finalLevel">1</span>
+        </div>
+        <button class="btn" onclick="restartGame()">重新开始</button>
+    </div>
+
+    <!-- 暂停菜单 -->
+    <div id="pauseScreen">
+        <h2>⏸️ 游戏暂停</h2>
+        <div class="pause-buttons">
+            <button class="pause-btn" onclick="resumeGame()">继续游戏</button>
+            <button class="pause-btn" onclick="restartGame()">重新开始</button>
+            <button class="pause-btn exit" onclick="exitGame()">退出游戏</button>
+        </div>
+    </div>
+
+    <!-- 暂停提示 -->
+    <div class="pause-hint">按 ESC 暂停</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 游戏状态
+        let gameRunning = false;
+        let score = 0;
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        // 怪兽设计数据 - 10种形态
+        const monsterTypes = [
+            {
+                name: "数据幼虫",
+                level: 1,
+                size: 15,
+                color: "#00ff88",
+                glow: "#00ff88",
+                segments: 5,
+                speed: 3,
+                bodyShape: "worm",
+                description: "刚诞生的数字生命体"
+            },
+            {
+                name: "脉冲鱼",
+                level: 2,
+                size: 22,
+                color: "#00ffff",
+                glow: "#00ffff",
+                segments: 7,
+                speed: 3.2,
+                bodyShape: "fish",
+                description: "能发出电磁脉冲"
+            },
+            {
+                name: "霓虹鳐",
+                level: 3,
+                size: 30,
+                color: "#ff00ff",
+                glow: "#ff00ff",
+                segments: 9,
+                speed: 3.4,
+                bodyShape: "ray",
+                description: "在深海中闪烁着霓虹光芒"
+            },
+            {
+                name: "量子鲨",
+                level: 4,
+                size: 40,
+                color: "#ff4444",
+                glow: "#ff4444",
+                segments: 11,
+                speed: 3.6,
+                bodyShape: "shark",
+                description: "能在量子态间穿梭"
+            },
+            {
+                name: "赛博章鱼",
+                level: 5,
+                size: 52,
+                color: "#aa00ff",
+                glow: "#aa00ff",
+                segments: 8,
+                speed: 3.3,
+                bodyShape: "octopus",
+                description: "拥有机械触手的智能生物"
+            },
+            {
+                name: "等离子龙",
+                level: 6,
+                size: 65,
+                color: "#ff8800",
+                glow: "#ff8800",
+                segments: 13,
+                speed: 3.5,
+                bodyShape: "dragon",
+                description: "体内流淌着等离子能量"
+            },
+            {
+                name: "虚空鳐鱼",
+                level: 7,
+                size: 80,
+                color: "#4400ff",
+                glow: "#4400ff",
+                segments: 15,
+                speed: 3.4,
+                bodyShape: "voidray",
+                description: "来自虚空的神秘生物"
+            },
+            {
+                name: "机械利维坦",
+                level: 8,
+                size: 95,
+                color: "#ff0044",
+                glow: "#ff0044",
+                segments: 17,
+                speed: 3.2,
+                bodyShape: "leviathan",
+                description: "半机械半生物的巨兽"
+            },
+            {
+                name: "神经网络巨兽",
+                level: 9,
+                size: 115,
+                color: "#00ffaa",
+                glow: "#00ffaa",
+                segments: 20,
+                speed: 3.0,
+                bodyShape: "neural",
+                description: "拥有分布式神经网络"
+            },
+            {
+                name: "赛博海神",
+                level: 10,
+                size: 140,
+                color: "#ffff00",
+                glow: "#ffff00",
+                segments: 25,
+                speed: 2.8,
+                bodyShape: "god",
+                description: "深海的终极统治者"
+            }
+        ];
+
+        // 玩家对象
+        class Player {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.level = 1;
+                this.exp = 0;
+                this.expToNext = 5;
+                this.angle = 0;
+                this.bodySegments = [];
+                this.tailAngle = 0;
+                this.attackCooldown = 0;
+                this.evolving = false;
+                this.evolutionTimer = 0;
+                this.particles = [];
+                
+                // 初始化身体段
+                this.initBody();
+            }
+
+            initBody() {
+                const type = monsterTypes[this.level - 1];
+                this.bodySegments = [];
+                for (let i = 0; i < type.segments; i++) {
+                    this.bodySegments.push({
+                        x: this.x - i * type.size * 0.3,
+                        y: this.y,
+                        angle: 0
+                    });
+                }
+            }
+
+            update() {
+                const type = monsterTypes[this.level - 1];
+                
+                // 计算朝向鼠标的角度
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const targetAngle = Math.atan2(dy, dx);
+                
+                // 平滑转向
+                let angleDiff = targetAngle - this.angle;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                this.angle += angleDiff * 0.1;
+
+                // 移动
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 5) {
+                    this.x += Math.cos(this.angle) * type.speed;
+                    this.y += Math.sin(this.angle) * type.speed;
+                }
+
+                // 边界限制
+                this.x = Math.max(type.size, Math.min(canvas.width - type.size, this.x));
+                this.y = Math.max(type.size, Math.min(canvas.height - type.size, this.y));
+
+                // 更新身体段（跟随效果）
+                this.updateBodySegments();
+
+                // 尾巴摆动
+                this.tailAngle += 0.2;
+
+                // 进化特效
+                if (this.evolving) {
+                    this.evolutionTimer--;
+                    this.createEvolutionParticles();
+                    if (this.evolutionTimer <= 0) {
+                        this.evolving = false;
+                    }
+                }
+
+                // 更新粒子
+                this.updateParticles();
+
+                // 攻击冷却
+                if (this.attackCooldown > 0) this.attackCooldown--;
+            }
+
+            updateBodySegments() {
+                const type = monsterTypes[this.level - 1];
+                
+                // 头部跟随鼠标
+                this.bodySegments[0].x = this.x;
+                this.bodySegments[0].y = this.y;
+                this.bodySegments[0].angle = this.angle;
+
+                // 身体段跟随前一段
+                for (let i = 1; i < this.bodySegments.length; i++) {
+                    const prev = this.bodySegments[i - 1];
+                    const curr = this.bodySegments[i];
+                    
+                    const dx = prev.x - curr.x;
+                    const dy = prev.y - curr.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const targetDist = type.size * 0.35;
+                    
+                    if (dist > 0) {
+                        const t = (dist - targetDist) / dist;
+                        curr.x += dx * t * 0.3;
+                        curr.y += dy * t * 0.3;
+                        curr.angle = Math.atan2(dy, dx);
+                    }
+                }
+            }
+
+            createEvolutionParticles() {
+                const type = monsterTypes[this.level - 1];
+                for (let i = 0; i < 5; i++) {
+                    this.particles.push({
+                        x: this.x + (Math.random() - 0.5) * type.size * 3,
+                        y: this.y + (Math.random() - 0.5) * type.size * 3,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 30,
+                        color: type.glow,
+                        size: Math.random() * 5 + 2
+                    });
+                }
+            }
+
+            updateParticles() {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life--;
+                    p.size *= 0.95;
+                    
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+
+            draw() {
+                const type = monsterTypes[this.level - 1];
+                
+                // 绘制粒子
+                this.particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = p.life / 30;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // 绘制身体段（从尾部开始，这样头部会在最上层）
+                for (let i = this.bodySegments.length - 1; i >= 0; i--) {
+                    this.drawBodySegment(i, type);
+                }
+
+                // 绘制进化光环
+                if (this.evolving) {
+                    ctx.save();
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = type.glow;
+                    ctx.globalAlpha = 0.5 + Math.sin(this.evolutionTimer * 0.3) * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, type.size * 2 + Math.sin(this.evolutionTimer * 0.2) * 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            drawBodySegment(index, type) {
+                const segment = this.bodySegments[index];
+                const progress = index / (this.bodySegments.length - 1);
+                const size = type.size * (1 - progress * 0.6);
+                
+                ctx.save();
+                ctx.translate(segment.x, segment.y);
+                ctx.rotate(segment.angle);
+                
+                // 发光效果
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = type.glow;
+                
+                // 根据形态绘制不同的身体
+                switch (type.bodyShape) {
+                    case "worm":
+                        this.drawWormSegment(size, progress, type);
+                        break;
+                    case "fish":
+                        this.drawFishSegment(size, progress, type, index);
+                        break;
+                    case "ray":
+                        this.drawRaySegment(size, progress, type, index);
+                        break;
+                    case "shark":
+                        this.drawSharkSegment(size, progress, type, index);
+                        break;
+                    case "octopus":
+                        this.drawOctopusSegment(size, progress, type, index);
+                        break;
+                    case "dragon":
+                        this.drawDragonSegment(size, progress, type, index);
+                        break;
+                    case "voidray":
+                        this.drawVoidRaySegment(size, progress, type, index);
+                        break;
+                    case "leviathan":
+                        this.drawLeviathanSegment(size, progress, type, index);
+                        break;
+                    case "neural":
+                        this.drawNeuralSegment(size, progress, type, index);
+                        break;
+                    case "god":
+                        this.drawGodSegment(size, progress, type, index);
+                        break;
+                }
+                
+                ctx.restore();
+            }
+
+            drawWormSegment(size, progress, type) {
+                // 数据幼虫 - 简单的线条虫子
+                ctx.strokeStyle = type.color;
+                ctx.lineWidth = size * 0.4;
+                ctx.lineCap = 'round';
+                
+                // 身体波浪效果
+                const wave = Math.sin(this.tailAngle + progress * 3) * 5;
+                
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.5, wave);
+                ctx.lineTo(size * 0.5, -wave);
+                ctx.stroke();
+                
+                // 节点
+                ctx.fillStyle = type.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 头部眼睛
+                if (progress === 0) {
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.3, -size * 0.2, size * 0.15, 0, Math.PI * 2);
+                    ctx.arc(size * 0.3, size * 0.2, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            drawFishSegment(size, progress, type, index) {
+                // 脉冲鱼
+                const wave = Math.sin(this.tailAngle + progress * 4) * 3;
+                
+                if (index === 0) {
+                    // 头部
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size, size * 0.7, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 眼睛
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.5, -size * 0.3, size * 0.2, 0, Math.PI * 2);
+                    ctx.arc(size * 0.5, size * 0.3, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 脉冲环
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.5 + Math.sin(this.tailAngle * 2) * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 1.3, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    // 身体
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.5;
+                    ctx.lineCap = 'round';
+                    ctx.globalAlpha = 1 - progress * 0.5;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.6, wave);
+                    ctx.lineTo(size * 0.6, -wave);
+                    ctx.stroke();
+                    
+                    // 尾鳍
+                    if (progress > 0.8) {
+                        ctx.fillStyle = type.color;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(-size, -size * 0.8);
+                        ctx.lineTo(-size, size * 0.8);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+
+            drawRaySegment(size, progress, type, index) {
+                // 霓虹鳐
+                const wave = Math.sin(this.tailAngle + progress * 3) * 5;
+                
+                if (index === 0) {
+                    // 菱形身体
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.moveTo(size, 0);
+                    ctx.lineTo(0, -size * 0.8);
+                    ctx.lineTo(-size * 0.5, 0);
+                    ctx.lineTo(0, size * 0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 霓虹条纹
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.3, -size * 0.4);
+                    ctx.lineTo(size * 0.3, size * 0.4);
+                    ctx.stroke();
+                    
+                    // 眼睛
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.3, -size * 0.2, size * 0.12, 0, Math.PI * 2);
+                    ctx.arc(size * 0.3, size * 0.2, size * 0.12, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 尾巴
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.3 * (1 - progress);
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.5, wave);
+                    ctx.quadraticCurveTo(0, -wave, size * 0.5, wave * 0.5);
+                    ctx.stroke();
+                }
+            }
+
+            drawSharkSegment(size, progress, type, index) {
+                // 量子鲨
+                const wave = Math.sin(this.tailAngle + progress * 2) * 4;
+                
+                if (index === 0) {
+                    // 鲨鱼头部
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.moveTo(size * 1.2, 0);
+                    ctx.lineTo(-size * 0.3, -size * 0.6);
+                    ctx.lineTo(-size * 0.5, 0);
+                    ctx.lineTo(-size * 0.3, size * 0.6);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 背鳍
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.2, -size * 0.4);
+                    ctx.lineTo(-size * 0.5, -size * 1.2);
+                    ctx.lineTo(size * 0.2, -size * 0.4);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 眼睛
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.4, -size * 0.25, size * 0.15, 0, Math.PI * 2);
+                    ctx.arc(size * 0.4, size * 0.25, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 量子特效
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 1;
+                    ctx.globalAlpha = 0.3;
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size * (1 + i * 0.3), 
+                            this.tailAngle + i, this.tailAngle + i + 1);
+                        ctx.stroke();
+                    }
+                } else {
+                    // 身体
+                    ctx.fillStyle = type.color;
+                    ctx.globalAlpha = 1 - progress * 0.4;
+                    const segSize = size * (1 - progress * 0.5);
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(0, wave, segSize, segSize * 0.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 尾鳍
+                    if (progress > 0.8) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, wave);
+                        ctx.lineTo(-segSize, -segSize + wave);
+                        ctx.lineTo(-segSize * 0.5, wave);
+                        ctx.lineTo(-segSize, segSize + wave);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+
+            drawOctopusSegment(size, progress, type, index) {
+                // 赛博章鱼
+                if (index === 0) {
+                    // 头部
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 机械纹理
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // 发光核心
+                    ctx.fillStyle = type.glow;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 眼睛
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.3, -size * 0.3, size * 0.15, 0, Math.PI * 2);
+                    ctx.arc(-size * 0.3, size * 0.3, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 触手
+                    const tentacleIndex = (index - 1) % 8;
+                    const angle = (tentacleIndex / 8) * Math.PI * 2 + this.tailAngle * 0.5;
+                    const wave = Math.sin(this.tailAngle + tentacleIndex) * 10;
+                    
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.2 * (1 - progress);
+                    ctx.lineCap = 'round';
+                    
+                    const tx = Math.cos(angle) * size * 0.8;
+                    const ty = Math.sin(angle) * size * 0.8;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(
+                        tx * 0.5 + wave, 
+                        ty * 0.5 + wave,
+                        tx, ty
+                    );
+                    ctx.stroke();
+                }
+            }
+
+            drawDragonSegment(size, progress, type, index) {
+                // 等离子龙
+                const wave = Math.sin(this.tailAngle + progress * 2) * 6;
+                
+                if (index === 0) {
+                    // 龙头
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.moveTo(size, 0);
+                    ctx.lineTo(-size * 0.5, -size * 0.5);
+                    ctx.lineTo(-size * 0.3, 0);
+                    ctx.lineTo(-size * 0.5, size * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 龙角
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.2, -size * 0.3);
+                    ctx.lineTo(size * 0.5, -size * 1.2);
+                    ctx.lineTo(size * 0.4, -size * 0.2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.2, size * 0.3);
+                    ctx.lineTo(size * 0.5, size * 1.2);
+                    ctx.lineTo(size * 0.4, size * 0.2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 等离子火焰
+                    ctx.fillStyle = '#ffff00';
+                    ctx.globalAlpha = 0.5 + Math.sin(this.tailAngle * 3) * 0.3;
+                    for (let i = 0; i < 5; i++) {
+                        const fx = -size * 0.8 - i * size * 0.3;
+                        const fy = (Math.random() - 0.5) * size * 0.5;
+                        ctx.beginPath();
+                        ctx.arc(fx, fy, size * 0.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // 眼睛
+                    ctx.fillStyle = '#ffff00';
+                    ctx.globalAlpha = 1;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.3, -size * 0.2, size * 0.12, 0, Math.PI * 2);
+                    ctx.arc(size * 0.3, size * 0.2, size * 0.12, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 龙身
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.4 * (1 - progress * 0.5);
+                    ctx.lineCap = 'round';
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.5, wave);
+                    ctx.lineTo(size * 0.5, -wave * 0.5);
+                    ctx.stroke();
+                    
+                    // 龙鳞
+                    ctx.fillStyle = type.glow;
+                    ctx.globalAlpha = 0.6;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.2 * (1 - progress), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            drawVoidRaySegment(size, progress, type, index) {
+                // 虚空鳐鱼
+                const wave = Math.sin(this.tailAngle + progress * 2) * 8;
+                
+                if (index === 0) {
+                    // 虚空身体
+                    ctx.fillStyle = type.color;
+                    ctx.globalAlpha = 0.8;
+                    
+                    // 主身体
+                    ctx.beginPath();
+                    ctx.moveTo(size, 0);
+                    ctx.lineTo(0, -size * 0.8);
+                    ctx.lineTo(-size * 0.8, 0);
+                    ctx.lineTo(0, size * 0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 虚空能量
+                    ctx.strokeStyle = '#8800ff';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.4;
+                    for (let i = 0; i < 4; i++) {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size * (0.5 + i * 0.3), 
+                            this.tailAngle + i * 0.5, 
+                            this.tailAngle + i * 0.5 + Math.PI);
+                        ctx.stroke();
+                    }
+                    
+                    // 虚空之眼
+                    ctx.fillStyle = '#000';
+                    ctx.globalAlpha = 1;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.3, 0, size * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.3, 0, size * 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 虚空触须
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.15 * (1 - progress);
+                    ctx.globalAlpha = 0.6 - progress * 0.3;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.5, wave);
+                    ctx.quadraticCurveTo(0, wave * 2, size * 0.5, wave * 0.5);
+                    ctx.stroke();
+                }
+            }
+
+            drawLeviathanSegment(size, progress, type, index) {
+                // 机械利维坦
+                const wave = Math.sin(this.tailAngle + progress * 1.5) * 5;
+                
+                if (index === 0) {
+                    // 机械头部
+                    ctx.fillStyle = '#444';
+                    ctx.beginPath();
+                    ctx.moveTo(size * 1.2, 0);
+                    ctx.lineTo(-size * 0.3, -size * 0.7);
+                    ctx.lineTo(-size * 0.6, 0);
+                    ctx.lineTo(-size * 0.3, size * 0.7);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 机械装甲板
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.5, -size * 0.4);
+                    ctx.lineTo(size * 0.5, size * 0.4);
+                    ctx.moveTo(0, -size * 0.5);
+                    ctx.lineTo(0, size * 0.5);
+                    ctx.stroke();
+                    
+                    // 能量核心
+                    ctx.fillStyle = type.glow;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.2, 0, size * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 机械眼
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.6, -size * 0.25, size * 0.15, 0, Math.PI * 2);
+                    ctx.arc(size * 0.6, size * 0.25, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 机械鳍
+                    ctx.fillStyle = '#555';
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.2, -size * 0.5);
+                    ctx.lineTo(-size * 0.8, -size * 1.3);
+                    ctx.lineTo(size * 0.2, -size * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // 机械身体段
+                    ctx.fillStyle = '#333';
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = 2;
+                    
+                    const segSize = size * (1 - progress * 0.4);
+                    
+                    // 机械关节
+                    ctx.fillRect(-segSize * 0.6, -segSize * 0.3 + wave, segSize * 1.2, segSize * 0.6);
+                    ctx.strokeRect(-segSize * 0.6, -segSize * 0.3 + wave, segSize * 1.2, segSize * 0.6);
+                    
+                    // 能量线
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(-segSize * 0.3, wave);
+                    ctx.lineTo(segSize * 0.3, wave);
+                    ctx.stroke();
+                    
+                    // 尾鳍
+                    if (progress > 0.85) {
+                        ctx.fillStyle = '#444';
+                        ctx.beginPath();
+                        ctx.moveTo(0, wave);
+                        ctx.lineTo(-segSize * 1.5, -segSize + wave);
+                        ctx.lineTo(-segSize * 0.5, wave);
+                        ctx.lineTo(-segSize * 1.5, segSize + wave);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+
+            drawNeuralSegment(size, progress, type, index) {
+                // 神经网络巨兽
+                const wave = Math.sin(this.tailAngle + progress * 2) * 6;
+                
+                if (index === 0) {
+                    // 神经网络核心
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 神经网络连接
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2 + this.tailAngle * 0.3;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(Math.cos(angle) * size, Math.sin(angle) * size);
+                        ctx.stroke();
+                        
+                        // 节点
+                        ctx.fillStyle = type.glow;
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(angle) * size * 0.7, Math.sin(angle) * size * 0.7, 
+                            size * 0.1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // 核心眼
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.4, -size * 0.2, size * 0.15, 0, Math.PI * 2);
+                    ctx.arc(size * 0.4, size * 0.2, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#00ffaa';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.4, -size * 0.2, size * 0.08, 0, Math.PI * 2);
+                    ctx.arc(size * 0.4, size * 0.2, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 神经触须
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.1 * (1 - progress * 0.5);
+                    
+                    const numTentacles = 6;
+                    for (let t = 0; t < numTentacles; t++) {
+                        const angle = (t / numTentacles) * Math.PI * 2 + this.tailAngle * 0.2;
+                        const tx = Math.cos(angle) * size * 0.5;
+                        const ty = Math.sin(angle) * size * 0.5 + wave;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(0, wave);
+                        ctx.quadraticCurveTo(tx * 0.5, ty, tx, ty);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            drawGodSegment(size, progress, type, index) {
+                // 赛博海神
+                const wave = Math.sin(this.tailAngle + progress * 1.5) * 8;
+                
+                if (index === 0) {
+                    // 神之头部
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.moveTo(size * 1.3, 0);
+                    ctx.lineTo(-size * 0.3, -size * 0.8);
+                    ctx.lineTo(-size * 0.6, 0);
+                    ctx.lineTo(-size * 0.3, size * 0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 神之光环
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 3;
+                    for (let i = 0; i < 3; i++) {
+                        ctx.globalAlpha = 0.3 + i * 0.2;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size * (1.2 + i * 0.4), 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    
+                    // 神之眼
+                    ctx.fillStyle = '#fff';
+                    ctx.globalAlpha = 1;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ffff00';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.5, -size * 0.25, size * 0.2, 0, Math.PI * 2);
+                    ctx.arc(size * 0.5, size * 0.25, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 神之角
+                    ctx.fillStyle = type.color;
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.3, -size * 0.5);
+                    ctx.lineTo(size * 0.8, -size * 1.8);
+                    ctx.lineTo(size * 0.6, -size * 0.4);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.3, size * 0.5);
+                    ctx.lineTo(size * 0.8, size * 1.8);
+                    ctx.lineTo(size * 0.6, size * 0.4);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // 神之身体
+                    ctx.strokeStyle = type.color;
+                    ctx.lineWidth = size * 0.35 * (1 - progress * 0.4);
+                    ctx.lineCap = 'round';
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.6, wave);
+                    ctx.quadraticCurveTo(0, wave * 1.5, size * 0.6, wave * 0.5);
+                    ctx.stroke();
+                    
+                    // 神之鳞片
+                    ctx.fillStyle = type.glow;
+                    ctx.globalAlpha = 0.5;
+                    ctx.beginPath();
+                    ctx.arc(0, wave, size * 0.15 * (1 - progress), 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 神之尾鳍
+                    if (progress > 0.9) {
+                        ctx.fillStyle = type.color;
+                        ctx.globalAlpha = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(0, wave);
+                        ctx.lineTo(-size * 2, -size * 1.5 + wave);
+                        ctx.lineTo(-size, wave);
+                        ctx.lineTo(-size * 2, size * 1.5 + wave);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+
+            gainExp(amount) {
+                this.exp += amount;
+                score += amount * 10;
+                
+                if (this.exp >= this.expToNext && this.level < 10) {
+                    this.evolve();
+                }
+                
+                this.updateUI();
+            }
+
+            evolve() {
+                this.level++;
+                this.exp = 0;
+                this.expToNext = Math.floor(this.expToNext * 1.5);
+                this.evolving = true;
+                this.evolutionTimer = 60;
+                
+                // 重新初始化身体
+                this.initBody();
+                
+                // 创建进化特效
+                for (let i = 0; i < 50; i++) {
+                    this.particles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: (Math.random() - 0.5) * 15,
+                        vy: (Math.random() - 0.5) * 15,
+                        life: 60,
+                        color: monsterTypes[this.level - 1].glow,
+                        size: Math.random() * 8 + 3
+                    });
+                }
+            }
+
+            // 死亡动画
+            die() {
+                this.dead = true;
+                this.deathTimer = 90; // 死亡动画持续90帧（约1.5秒）
+                this.deathParticles = [];
+                
+                const type = monsterTypes[this.level - 1];
+                
+                // 创建爆炸粒子效果
+                for (let i = 0; i < 80; i++) {
+                    const angle = (Math.random() * Math.PI * 2);
+                    const speed = Math.random() * 8 + 3;
+                    this.deathParticles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: 60 + Math.random() * 30,
+                        maxLife: 60 + Math.random() * 30,
+                        color: type.glow,
+                        size: Math.random() * 6 + 2,
+                        type: 'explosion'
+                    });
+                }
+                
+                // 创建身体碎片
+                for (let i = 0; i < this.bodySegments.length; i++) {
+                    const seg = this.bodySegments[i];
+                    this.deathParticles.push({
+                        x: seg.x,
+                        y: seg.y,
+                        vx: (Math.random() - 0.5) * 5,
+                        vy: (Math.random() - 0.5) * 5,
+                        angle: seg.angle,
+                        life: 90,
+                        maxLife: 90,
+                        color: type.color,
+                        size: type.size * (1 - i / this.bodySegments.length) * 0.5,
+                        type: 'fragment',
+                        rotationSpeed: (Math.random() - 0.5) * 0.2
+                    });
+                }
+                
+                // 创建能量流失线条
+                for (let i = 0; i < 20; i++) {
+                    this.deathParticles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: (Math.random() - 0.5) * 3,
+                        vy: -Math.random() * 5 - 2,
+                        life: 40 + Math.random() * 20,
+                        maxLife: 40 + Math.random() * 20,
+                        color: '#ffffff',
+                        size: 2,
+                        type: 'energy',
+                        trail: []
+                    });
+                }
+            }
+            
+            updateDeathAnimation() {
+                if (!this.dead) return false;
+                
+                this.deathTimer--;
+                
+                // 更新死亡粒子
+                for (let i = this.deathParticles.length - 1; i >= 0; i--) {
+                    const p = this.deathParticles[i];
+                    
+                    if (p.type === 'fragment') {
+                        // 身体碎片旋转飞散
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.angle += p.rotationSpeed;
+                        p.vx *= 0.98; // 摩擦力
+                        p.vy *= 0.98;
+                    } else if (p.type === 'energy') {
+                        // 能量流失
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.trail.push({x: p.x, y: p.y});
+                        if (p.trail.length > 10) p.trail.shift();
+                    } else {
+                        // 爆炸粒子
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vx *= 0.95;
+                        p.vy *= 0.95;
+                    }
+                    
+                    p.life--;
+                    if (p.life <= 0) {
+                        this.deathParticles.splice(i, 1);
+                    }
+                }
+                
+                return this.deathTimer > 0 || this.deathParticles.length > 0;
+            }
+            
+            drawDeathAnimation() {
+                if (!this.dead) return;
+                
+                const type = monsterTypes[this.level - 1];
+                
+                // 绘制死亡粒子
+                this.deathParticles.forEach(p => {
+                    ctx.save();
+                    
+                    if (p.type === 'fragment') {
+                        // 绘制身体碎片
+                        const alpha = p.life / p.maxLife;
+                        ctx.globalAlpha = alpha;
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.angle);
+                        
+                        ctx.fillStyle = p.color;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = type.glow;
+                        
+                        // 绘制碎片形状
+                        ctx.beginPath();
+                        ctx.moveTo(p.size, 0);
+                        ctx.lineTo(-p.size * 0.5, p.size * 0.5);
+                        ctx.lineTo(-p.size * 0.5, -p.size * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                    } else if (p.type === 'energy') {
+                        // 绘制能量流失轨迹
+                        const alpha = p.life / p.maxLife;
+                        ctx.globalAlpha = alpha * 0.6;
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = p.size;
+                        ctx.lineCap = 'round';
+                        
+                        if (p.trail.length > 1) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.trail[0].x, p.trail[0].y);
+                            for (let i = 1; i < p.trail.length; i++) {
+                                ctx.lineTo(p.trail[i].x, p.trail[i].y);
+                            }
+                            ctx.stroke();
+                        }
+                    } else {
+                        // 绘制爆炸粒子
+                        const alpha = p.life / p.maxLife;
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = p.color;
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = p.color;
+                        
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                });
+                
+                // 绘制死亡闪光效果
+                if (this.deathTimer > 60) {
+                    const flashAlpha = (this.deathTimer - 60) / 30;
+                    ctx.save();
+                    ctx.globalAlpha = flashAlpha * 0.5;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, type.size * 3 * (1 - flashAlpha), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // 绘制冲击波
+                if (this.deathTimer > 30) {
+                    const waveProgress = 1 - (this.deathTimer - 30) / 60;
+                    ctx.save();
+                    ctx.strokeStyle = type.glow;
+                    ctx.lineWidth = 3 * (1 - waveProgress);
+                    ctx.globalAlpha = 1 - waveProgress;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = type.glow;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, type.size * (1 + waveProgress * 5), 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            updateUI() {
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('monsterName').textContent = monsterTypes[this.level - 1].name;
+                document.getElementById('score').textContent = score;
+                document.getElementById('size').textContent = Math.floor(monsterTypes[this.level - 1].size);
+                
+                const progress = (this.exp / this.expToNext) * 100;
+                document.getElementById('evolutionFill').style.width = progress + '%';
+            }
+        }
+
+        // 敌人类
+        class Enemy {
+            constructor(playerLevel) {
+                // 根据玩家等级生成不同等级的敌人
+                const rand = Math.random();
+                let level;
+                
+                if (rand < 0.4) {
+                    // 40% 生成比玩家低1级或同级
+                    level = Math.max(1, playerLevel - 1 + Math.floor(Math.random() * 2));
+                } else if (rand < 0.7) {
+                    // 30% 生成比玩家高1级
+                    level = Math.min(10, playerLevel + 1);
+                } else if (rand < 0.9) {
+                    // 20% 生成比玩家低2级或更低
+                    level = Math.max(1, playerLevel - 2 - Math.floor(Math.random() * 2));
+                } else {
+                    // 10% 生成比玩家高2级
+                    level = Math.min(10, playerLevel + 2);
+                }
+                
+                this.level = level;
+                this.type = monsterTypes[level - 1];
+                
+                // 随机位置（在屏幕外生成）
+                const side = Math.floor(Math.random() * 4);
+                switch (side) {
+                    case 0: // 上
+                        this.x = Math.random() * canvas.width;
+                        this.y = -this.type.size * 2;
+                        break;
+                    case 1: // 右
+                        this.x = canvas.width + this.type.size * 2;
+                        this.y = Math.random() * canvas.height;
+                        break;
+                    case 2: // 下
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + this.type.size * 2;
+                        break;
+                    case 3: // 左
+                        this.x = -this.type.size * 2;
+                        this.y = Math.random() * canvas.height;
+                        break;
+                }
+                
+                // 随机移动方向
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = this.type.speed * (0.5 + Math.random() * 0.5);
+                this.turnSpeed = 0.02 + Math.random() * 0.03;
+                
+                // 身体动画
+                this.tailAngle = Math.random() * Math.PI * 2;
+                this.bodyOffset = Math.random() * 100;
+            }
+
+            update() {
+                // 移动
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                
+                // 随机转向
+                this.angle += (Math.random() - 0.5) * this.turnSpeed;
+                
+                // 尾巴动画
+                this.tailAngle += 0.15;
+                
+                // 边界检查 - 如果完全离开屏幕则标记为可删除
+                this.offScreen = this.x < -this.type.size * 3 || 
+                                this.x > canvas.width + this.type.size * 3 ||
+                                this.y < -this.type.size * 3 || 
+                                this.y > canvas.height + this.type.size * 3;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.type.glow;
+                
+                // 简化的敌人绘制
+                this.drawSimpleBody();
+                
+                ctx.restore();
+            }
+
+            drawSimpleBody() {
+                const size = this.type.size;
+                const wave = Math.sin(this.tailAngle) * 3;
+                
+                // 身体
+                ctx.fillStyle = this.type.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size, size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 眼睛
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(size * 0.5, -size * 0.2, size * 0.15, 0, Math.PI * 2);
+                ctx.arc(size * 0.5, size * 0.2, size * 0.15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 尾巴
+                ctx.fillStyle = this.type.color;
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.5, 0);
+                ctx.lineTo(-size * 1.3, -size * 0.5 + wave);
+                ctx.lineTo(-size * 1.3, size * 0.5 + wave);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 等级标识
+                ctx.fillStyle = '#fff';
+                ctx.font = `bold ${size * 0.4}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(this.level, 0, size * 0.8);
+            }
+        }
+
+        // 背景粒子
+        class BackgroundParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 0.5 + 0.1;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = Math.random() > 0.5 ? '#00ffff' : '#ff00ff';
+            }
+
+            update() {
+                this.y += this.speedY;
+                if (this.y > canvas.height) {
+                    this.y = 0;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // 游戏对象
+        let player;
+        let enemies = [];
+        let bgParticles = [];
+        let enemySpawnTimer = 0;
+
+        // 初始化背景粒子
+        function initBgParticles() {
+            bgParticles = [];
+            for (let i = 0; i < 100; i++) {
+                bgParticles.push(new BackgroundParticle());
+            }
+        }
+
+        // 生成敌人
+        function spawnEnemy() {
+            if (player) {
+                enemies.push(new Enemy(player.level));
+            }
+        }
+
+        // 碰撞检测
+        function checkCollision(obj1, obj2) {
+            const dx = obj1.x - obj2.x;
+            const dy = obj1.y - obj2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const minDist = (obj1.type ? obj1.type.size : monsterTypes[obj1.level - 1].size) + 
+                           (obj2.type ? obj2.type.size : monsterTypes[obj2.level - 1].size);
+            return dist < minDist * 0.7;
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            if (!gameRunning && !(player && player.dead)) return;
+
+            // 清空画布
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制背景粒子
+            bgParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 如果玩家正在播放死亡动画
+            if (player && player.dead) {
+                // 更新和绘制敌人（但不生成新的）
+                enemies.forEach(enemy => {
+                    enemy.update();
+                    enemy.draw();
+                });
+                
+                // 更新和绘制死亡动画
+                const animating = player.updateDeathAnimation();
+                player.drawDeathAnimation();
+                
+                // 死亡动画结束
+                if (!animating) {
+                    showGameOverScreen();
+                    return;
+                }
+                
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // 生成敌人
+            enemySpawnTimer++;
+            if (enemySpawnTimer > 40) {
+                spawnEnemy();
+                enemySpawnTimer = 0;
+            }
+
+            // 更新和绘制敌人
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                enemy.update();
+                enemy.draw();
+
+                // 移除离屏敌人
+                if (enemy.offScreen) {
+                    enemies.splice(i, 1);
+                    continue;
+                }
+
+                // 碰撞检测
+                if (player && checkCollision(player, enemy)) {
+                    if (player.level >= enemy.level) {
+                        // 吞噬敌人
+                        player.gainExp(1);
+                        enemies.splice(i, 1);
+                        
+                        // 吞噬特效
+                        for (let j = 0; j < 10; j++) {
+                            player.particles.push({
+                                x: enemy.x,
+                                y: enemy.y,
+                                vx: (Math.random() - 0.5) * 8,
+                                vy: (Math.random() - 0.5) * 8,
+                                life: 20,
+                                color: enemy.type.glow,
+                                size: Math.random() * 4 + 2
+                            });
+                        }
+                    } else {
+                        // 被吃掉 - 触发死亡动画
+                        triggerDeath();
+                    }
+                }
+            }
+
+            // 更新和绘制玩家
+            if (player) {
+                player.update();
+                player.draw();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 触发死亡
+        function triggerDeath() {
+            if (player) {
+                player.die();
+            }
+        }
+        
+        // 显示游戏结束界面
+        function showGameOverScreen() {
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevel').textContent = player ? player.level : 1;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            document.getElementById('pauseScreen').style.display = 'none';
+        }
+
+        // 开始游戏
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('pauseScreen').style.display = 'none';
+            
+            player = new Player();
+            enemies = [];
+            score = 0;
+            enemySpawnTimer = 0;
+            
+            initBgParticles();
+            gameRunning = true;
+            gameLoop();
+        }
+
+        // 游戏结束（兼容旧调用）
+        function gameOver() {
+            // 如果已经在播放死亡动画，则不重复处理
+            if (player && player.dead) return;
+            triggerDeath();
+        }
+
+        // 重新开始
+        function restartGame() {
+            // 重置游戏状态
+            gameRunning = false;
+            if (player) {
+                player.dead = false;
+                player.deathTimer = 0;
+                player.deathParticles = [];
+            }
+            // 隐藏暂停菜单
+            document.getElementById('pauseScreen').style.display = 'none';
+            startGame();
+        }
+
+        // 暂停游戏
+        function pauseGame() {
+            if (!gameRunning || (player && player.dead)) return;
+            gameRunning = false;
+            document.getElementById('pauseScreen').style.display = 'flex';
+        }
+
+        // 继续游戏
+        function resumeGame() {
+            if (player && player.dead) return;
+            document.getElementById('pauseScreen').style.display = 'none';
+            gameRunning = true;
+            gameLoop();
+        }
+
+        // 退出游戏
+        function exitGame() {
+            // 重置游戏状态
+            gameRunning = false;
+            if (player) {
+                player.dead = false;
+                player.deathTimer = 0;
+                player.deathParticles = [];
+            }
+            document.getElementById('pauseScreen').style.display = 'none';
+            // 返回小游戏页面
+            window.location.href = 'games.html';
+        }
+
+        // 键盘控制（ESC暂停）
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const pauseScreen = document.getElementById('pauseScreen');
+                if (pauseScreen.style.display === 'flex') {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            }
+        });
+
+        // 鼠标控制
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // 触摸控制
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        });
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // 初始化
+        initBgParticles();
+    </script>
+</body>
+</html>

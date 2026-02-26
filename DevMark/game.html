@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博点击器 | Cyber Clicker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00f5d4;
+            --secondary: #7b2cbf;
+            --accent: #ff006e;
+            --font-mono: Consolas, Monaco, 'Courier New', 'Lucida Console', monospace;
+            --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --light: #e0e0e0;
+            --code-bg: #1a1a2e;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--darker);
+            color: var(--light);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 245, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 110, 0.05) 0%, transparent 70%),
+                var(--darker);
+        }
+
+        /* 数据流效果 */
+        #dataStream {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.12;
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 245, 212, 0.1);
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* 游戏主区域 */
+        .game-container {
+            padding: 6rem 5% 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        /* 左侧点击区域 */
+        .click-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .score-label {
+            font-size: 1rem;
+            color: rgba(224, 224, 224, 0.6);
+            margin-bottom: 0.5rem;
+        }
+
+        .score-value {
+            font-family: var(--font-mono);
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-per-second {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        /* 点击按钮 */
+        .click-button {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 
+                0 0 60px rgba(0, 245, 212, 0.5),
+                inset 0 0 60px rgba(255, 255, 255, 0.1);
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .click-button:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 80px rgba(0, 245, 212, 0.7),
+                inset 0 0 60px rgba(255, 255, 255, 0.2);
+        }
+
+        .click-button:active {
+            transform: scale(0.95);
+        }
+
+        /* 点击粒子效果 */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.2rem;
+            animation: float-up 1s ease-out forwards;
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.5);
+            }
+        }
+
+        /* 右侧建筑区域 */
+        .buildings-panel {
+            background: var(--code-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .building-item {
+            background: rgba(0, 245, 212, 0.05);
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .building-item.unlocked {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .building-item:hover.unlocked {
+            border-color: var(--primary);
+            background: rgba(0, 245, 212, 0.1);
+        }
+
+        .building-item.can-buy {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 245, 212, 0.3);
+        }
+
+        .building-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .building-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .building-count {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .building-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: rgba(224, 224, 224, 0.6);
+        }
+
+        .building-price {
+            color: var(--accent);
+        }
+
+        /* 升级区域 */
+        .upgrades-panel {
+            margin-top: 2rem;
+            background: var(--code-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+        }
+
+        .upgrade-item {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid rgba(0, 245, 212, 0.2);
+            border-radius: 20px;
+            margin: 0.3rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upgrade-item:hover {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        /* 统计信息 */
+        .stats-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 245, 212, 0.1);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 0.8rem;
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 968px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .buildings-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="dataStream"></canvas>
+    <div class="bg-animation"></div>
+
+    <!-- 导航栏 -->
+    <nav>
+        <a href="index.html" class="logo">&lt;Dev /&gt;</a>
+        <ul class="nav-links">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="share.html">视频分享</a></li>
+            <li><a href="games.html" style="color: var(--primary);">🎮 小游戏</a></li>
+        </ul>
+    </nav>
+
+    <!-- 游戏主区域 -->
+    <div class="game-container">
+        <!-- 左侧点击区域 -->
+        <div class="click-area">
+            <div class="score-display">
+                <div class="score-label">算力 (Hash Power)</div>
+                <div class="score-value" id="score">0</div>
+                <div class="score-per-second">每秒: <span id="perSecond">0</span> H/s</div>
+            </div>
+            
+            <button class="click-button" id="clickBtn">
+                <span style="font-size: 3rem;">⚡</span>
+            </button>
+        </div>
+
+        <!-- 右侧建筑区域 -->
+        <div class="buildings-panel" id="buildingsPanel">
+            <div class="panel-title">计算设施</div>
+            <div id="buildingsList"></div>
+        </div>
+    </div>
+
+    <!-- 底部统计 -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-label">总点击次数</div>
+            <div class="stat-value" id="totalClicks">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">建筑总数</div>
+            <div class="stat-value" id="totalBuildings">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">游戏时间</div>
+            <div class="stat-value" id="playTime">0:00</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">离线收益</div>
+            <div class="stat-value" id="offlineEarnings">0</div>
+        </div>
+    </div>
+
+    <script>
+        // 数据流效果
+        const dataStreamCanvas = document.getElementById('dataStream');
+        const dataStreamCtx = dataStreamCanvas.getContext('2d');
+        dataStreamCanvas.width = window.innerWidth;
+        dataStreamCanvas.height = window.innerHeight;
+
+        const dataStreams = [];
+        const streamColors = ['#00ffff', '#ff00ff', '#00ff88', '#ffff00', '#0088ff'];
+
+        function initDataStreams() {
+            dataStreams.length = 0;
+            for (let i = 0; i < 25; i++) {
+                dataStreams.push({
+                    x: Math.random() * dataStreamCanvas.width,
+                    y: Math.random() * dataStreamCanvas.height,
+                    speed: Math.random() * 2 + 0.5,
+                    length: Math.random() * 60 + 30,
+                    color: streamColors[Math.floor(Math.random() * streamColors.length)],
+                    opacity: Math.random() * 0.4 + 0.15,
+                    direction: Math.random() > 0.5 ? 'right' : 'down'
+                });
+            }
+        }
+
+        function updateDataStreams() {
+            dataStreamCtx.clearRect(0, 0, dataStreamCanvas.width, dataStreamCanvas.height);
+            
+            dataStreams.forEach(stream => {
+                dataStreamCtx.save();
+                dataStreamCtx.strokeStyle = stream.color;
+                dataStreamCtx.globalAlpha = stream.opacity;
+                dataStreamCtx.lineWidth = 1.5;
+                dataStreamCtx.shadowBlur = 8;
+                dataStreamCtx.shadowColor = stream.color;
+                
+                dataStreamCtx.beginPath();
+                
+                if (stream.direction === 'right') {
+                    dataStreamCtx.moveTo(stream.x, stream.y);
+                    dataStreamCtx.lineTo(stream.x + stream.length, stream.y);
+                    stream.x += stream.speed;
+                    if (stream.x > dataStreamCanvas.width) {
+                        stream.x = -stream.length;
+                        stream.y = Math.random() * dataStreamCanvas.height;
+                    }
+                } else {
+                    dataStreamCtx.moveTo(stream.x, stream.y);
+                    dataStreamCtx.lineTo(stream.x, stream.y + stream.length);
+                    stream.y += stream.speed;
+                    if (stream.y > dataStreamCanvas.height) {
+                        stream.y = -stream.length;
+                        stream.x = Math.random() * dataStreamCanvas.width;
+                    }
+                }
+                
+                dataStreamCtx.stroke();
+                
+                for (let j = 0; j < 2; j++) {
+                    const dotX = stream.direction === 'right' 
+                        ? stream.x + Math.random() * stream.length 
+                        : stream.x + (Math.random() - 0.5) * 8;
+                    const dotY = stream.direction === 'right' 
+                        ? stream.y + (Math.random() - 0.5) * 8 
+                        : stream.y + Math.random() * stream.length;
+                    
+                    dataStreamCtx.globalAlpha = stream.opacity * 0.7;
+                    dataStreamCtx.beginPath();
+                    dataStreamCtx.arc(dotX, dotY, 1.2, 0, Math.PI * 2);
+                    dataStreamCtx.fill();
+                }
+                
+                dataStreamCtx.restore();
+            });
+            
+            requestAnimationFrame(updateDataStreams);
+        }
+
+        initDataStreams();
+        updateDataStreams();
+
+        // 游戏数据
+        const buildings = [
+            { id: 0, name: 'Hello World脚本', icon: '📜', basePrice: 15, baseOutput: 1, desc: '最简单的程序' },
+            { id: 1, name: '爬虫机器人', icon: '🕷️', basePrice: 100, baseOutput: 5, desc: '自动抓取数据' },
+            { id: 2, name: 'API服务器', icon: '🔌', basePrice: 500, baseOutput: 25, desc: '提供接口服务' },
+            { id: 3, name: '数据库集群', icon: '🗄️', basePrice: 2000, baseOutput: 100, desc: '存储海量数据' },
+            { id: 4, name: 'AI推理节点', icon: '🧠', basePrice: 8000, baseOutput: 400, desc: '神经网络计算' },
+            { id: 5, name: '区块链矿机', icon: '⛏️', basePrice: 32000, baseOutput: 1600, desc: '去中心化算力' },
+            { id: 6, name: '量子计算核心', icon: '⚛️', basePrice: 128000, baseOutput: 6400, desc: '量子比特运算' },
+            { id: 7, name: '神经网络矩阵', icon: '🌐', basePrice: 512000, baseOutput: 25600, desc: '深度学习集群' },
+            { id: 8, name: '星际计算网络', icon: '🚀', basePrice: 2048000, baseOutput: 102400, desc: '跨星球分布式' },
+            { id: 9, name: '戴森球算力站', icon: '☀️', basePrice: 8192000, baseOutput: 409600, desc: '恒星能源驱动' }
+        ];
+
+        // 游戏状态
+        let gameState = {
+            score: 0,
+            totalClicks: 0,
+            clickPower: 1,
+            buildings: new Array(10).fill(0),
+            startTime: Date.now(),
+            lastSave: Date.now()
+        };
+
+        // 加载存档
+        function loadGame() {
+            const saved = localStorage.getItem('cyberClickerSave');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const offlineTime = (Date.now() - data.lastSave) / 1000;
+                const offlineEarnings = calculateOfflineEarnings(data, offlineTime);
+                
+                gameState = data;
+                gameState.score += offlineEarnings;
+                gameState.lastSave = Date.now();
+                
+                if (offlineEarnings > 0) {
+                    showOfflineEarnings(offlineEarnings, offlineTime);
+                }
+            }
+        }
+
+        // 计算离线收益
+        function calculateOfflineEarnings(data, seconds) {
+            let perSecond = 0;
+            data.buildings.forEach((count, index) => {
+                perSecond += count * buildings[index].baseOutput;
+            });
+            return Math.floor(perSecond * seconds * 0.5); // 离线收益50%
+        }
+
+        // 显示离线收益
+        function showOfflineEarnings(amount, seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            document.getElementById('offlineEarnings').textContent = `+${formatNumber(amount)} (${hours}h ${mins}m)`;
+        }
+
+        // 保存游戏
+        function saveGame() {
+            gameState.lastSave = Date.now();
+            localStorage.setItem('cyberClickerSave', JSON.stringify(gameState));
+        }
+
+        // 格式化数字
+        function formatNumber(num) {
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return Math.floor(num).toString();
+        }
+
+        // 获取建筑价格
+        function getBuildingPrice(index) {
+            const count = gameState.buildings[index];
+            const base = buildings[index].basePrice;
+            return Math.floor(base * Math.pow(1.15, count));
+        }
+
+        // 计算每秒产出
+        function calculatePerSecond() {
+            let total = 0;
+            gameState.buildings.forEach((count, index) => {
+                total += count * buildings[index].baseOutput;
+            });
+            return total;
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('score').textContent = formatNumber(gameState.score);
+            document.getElementById('perSecond').textContent = formatNumber(calculatePerSecond());
+            document.getElementById('totalClicks').textContent = formatNumber(gameState.totalClicks);
+            
+            const totalBuildings = gameState.buildings.reduce((a, b) => a + b, 0);
+            document.getElementById('totalBuildings').textContent = totalBuildings;
+            
+            // 更新建筑列表
+            updateBuildingsList();
+        }
+
+        // 更新建筑列表
+        function updateBuildingsList() {
+            const container = document.getElementById('buildingsList');
+            container.innerHTML = '';
+            
+            buildings.forEach((building, index) => {
+                const count = gameState.buildings[index];
+                const price = getBuildingPrice(index);
+                const canBuy = gameState.score >= price;
+                const canAfford = gameState.score >= price;
+                const visible = index === 0 || gameState.buildings[index - 1] > 0 || canAfford;
+                
+                const item = document.createElement('div');
+                item.className = `building-item ${visible ? 'unlocked' : ''} ${canAfford ? 'can-buy' : ''}`;
+                item.innerHTML = `
+                    <div class="building-header">
+                        <span class="building-name">${building.icon} ${building.name}</span>
+                        <span class="building-count">${count}</span>
+                    </div>
+                    <div class="building-info">
+                        <span>${building.desc}</span>
+                        <span class="building-price">💻 ${formatNumber(price)}</span>
+                    </div>
+                    <div class="building-info">
+                        <span>产出: ${formatNumber(building.baseOutput)}/s</span>
+                        <span>总计: ${formatNumber(count * building.baseOutput)}/s</span>
+                    </div>
+                `;
+                
+                if (visible && canAfford) {
+                    item.onclick = () => buyBuilding(index);
+                }
+                
+                container.appendChild(item);
+            });
+        }
+
+        // 购买建筑
+        function buyBuilding(index) {
+            const price = getBuildingPrice(index);
+            if (gameState.score >= price) {
+                gameState.score -= price;
+                gameState.buildings[index]++;
+                saveGame();
+                updateUI();
+            }
+        }
+
+        // 点击事件
+        document.getElementById('clickBtn').addEventListener('click', function(e) {
+            gameState.score += gameState.clickPower;
+            gameState.totalClicks++;
+            
+            // 创建粒子效果
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.textContent = '+' + formatNumber(gameState.clickPower);
+            particle.style.left = e.clientX + 'px';
+            particle.style.top = e.clientY + 'px';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 1000);
+            
+            saveGame();
+            updateUI();
+        });
+
+        // 自动生产
+        setInterval(() => {
+            const perSecond = calculatePerSecond();
+            gameState.score += perSecond / 10;
+        }, 100);
+
+        // UI更新（降低频率避免闪烁）
+        setInterval(updateUI, 1000);
+
+        // 定期保存
+        setInterval(saveGame, 30000); // 每30秒保存
+
+        // 游戏时间统计
+        setInterval(() => {
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const hours = Math.floor(elapsed / 3600);
+            const mins = Math.floor((elapsed % 3600) / 60);
+            document.getElementById('playTime').textContent = `${hours}:${mins.toString().padStart(2, '0')}`;
+        }, 60000);
+
+        // 初始化
+        loadGame();
+        updateUI();
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            dataStreamCanvas.width = window.innerWidth;
+            dataStreamCanvas.height = window.innerHeight;
+        });
+
+        // 页面关闭前保存
+        window.addEventListener('beforeunload', saveGame);
+    </script>
+</body>
+</html>

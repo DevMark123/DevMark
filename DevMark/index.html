@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资深Java/Python开发工程师 | 5年经验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00f5d4;
+            --secondary: #7b2cbf;
+            --accent: #ff006e;
+            --font-mono: Consolas, Monaco, 'Courier New', 'Lucida Console', monospace;
+            --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --light: #e0e0e0;
+            --code-bg: #1a1a2e;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--darker);
+            color: var(--light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 245, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 110, 0.05) 0%, transparent 70%),
+                var(--darker);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 15s infinite;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 245, 212, 0.1);
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero区域 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 50px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 245, 212, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 245, 212, 0.6); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(224, 224, 224, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .typing-text {
+            font-family: var(--font-mono);
+            color: var(--primary);
+            border-right: 3px solid var(--primary);
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: var(--primary); }
+            51%, 100% { border-color: transparent; }
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: var(--font-mono);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(224, 224, 224, 0.6);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--dark);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 245, 212, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--light);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        /* 技能区域 */
+        .section {
+            padding: 6rem 5%;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: rgba(224, 224, 224, 0.6);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .skill-card {
+            background: var(--code-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .skill-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .skill-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 245, 212, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .skill-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 245, 212, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .skill-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .skill-tag {
+            padding: 0.3rem 0.8rem;
+            background: rgba(0, 245, 212, 0.1);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--primary);
+        }
+
+        /* AI工具区域 */
+        .ai-tools {
+            background: var(--code-bg);
+            margin: 0 5%;
+            border-radius: 24px;
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-tools::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 245, 212, 0.03) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-card {
+            background: rgba(10, 10, 15, 0.8);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            transition: all 0.3s;
+        }
+
+        .ai-card:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 245, 212, 0.2);
+        }
+
+        .ai-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            overflow: hidden;
+        }
+
+        .ai-logo svg {
+            width: 50px;
+            height: 50px;
+        }
+
+        .ai-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-card p {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* 代码展示区域 */
+        .code-showcase {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .code-window {
+            background: var(--code-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .code-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .code-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .code-title {
+            margin-left: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: rgba(224, 224, 224, 0.6);
+        }
+
+        .code-content {
+            padding: 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .line-number {
+            color: rgba(224, 224, 224, 0.3);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .code-text { color: var(--light); }
+        .code-keyword { color: #ff79c6; }
+        .code-function { color: #8be9fd; }
+        .code-string { color: #f1fa8c; }
+        .code-comment { color: #6272a4; }
+        .code-class { color: #50fa7b; }
+
+        /* 经验时间线 */
+        .timeline {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 50%;
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .timeline-item:nth-child(even) {
+            justify-content: flex-start;
+            padding-right: 0;
+            padding-left: 50%;
+        }
+
+        .timeline-content {
+            background: var(--code-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 350px;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            position: relative;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            top: 2rem;
+            right: -60px;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .timeline-item:nth-child(even) .timeline-dot {
+            right: auto;
+            left: -60px;
+        }
+
+        .timeline-year {
+            font-family: var(--font-mono);
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content p {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* 联系方式 */
+        .contact-section {
+            text-align: center;
+            padding: 6rem 5%;
+        }
+
+        .contact-grid {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.2rem 2rem;
+            background: var(--code-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--light);
+        }
+
+        .contact-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 245, 212, 0.2);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 245, 212, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .contact-info {
+            text-align: left;
+        }
+
+        .contact-label {
+            font-size: 0.8rem;
+            color: rgba(224, 224, 224, 0.5);
+        }
+
+        .contact-value {
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 3rem 5%;
+            border-top: 1px solid rgba(0, 245, 212, 0.1);
+            color: rgba(224, 224, 224, 0.5);
+        }
+
+        footer p {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero-stats { gap: 2rem; }
+            .stat-number { font-size: 2rem; }
+            .ai-tools { padding: 2rem; margin: 0 3%; }
+            .timeline::before { left: 20px; }
+            .timeline-item,
+            .timeline-item:nth-child(even) {
+                padding-left: 60px;
+                padding-right: 0;
+                justify-content: flex-start;
+            }
+            .timeline-dot,
+            .timeline-item:nth-child(even) .timeline-dot {
+                left: 10px;
+                right: auto;
+            }
+            .lazy-cat-container {
+                right: 10px !important;
+                bottom: 80px !important;
+                transform: scale(0.85);
+            }
+        }
+
+        /* 慵懒小肥猫 - 加菲猫图片 */
+        .lazy-cat-container {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            z-index: 999;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lazy-cat-container:hover {
+            transform: scale(1.08);
+        }
+
+        .lazy-cat {
+            width: 140px;
+            height: 90px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .lazy-cat img {
+            width: 100%;
+            height: 120%;
+            object-fit: cover;
+            object-position: center 10%;
+            display: block;
+            margin-bottom: -20%;
+            margin-top: -5%;
+        }
+
+        /* 云朵形状气泡 */
+        .cat-bubble {
+            position: absolute;
+            top: -25px;
+            left: 40%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+            padding: 8px 14px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            white-space: nowrap;
+            font-size: 12px;
+            color: #555;
+            font-weight: 500;
+            opacity: 0;
+            animation: bubbleFloat 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* 云朵装饰圆 */
+        .cat-bubble::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 8px;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .cat-bubble::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            right: 12px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        /* 云朵底部小圆 */
+        .bubble-cloud-1 {
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+            border-radius: 50%;
+        }
+
+        @keyframes bubbleFloat {
+            0%, 100% { 
+                opacity: 0;
+                transform: translateX(-50%) translateY(5px);
+            }
+            20%, 80% { 
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* 呼吸动画 */
+        .lazy-cat {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* 点击提示 */
+        .cat-hint {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .lazy-cat-container:hover .cat-hint {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 动态背景 -->
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- 导航栏 -->
+    <nav>
+        <div class="logo">&lt;Dev /&gt;</div>
+        <ul class="nav-links">
+            <li><a href="share.html">视频分享</a></li>
+            <li><a href="games.html">🎮 小游戏</a></li>
+            <li><a href="#skills">技能</a></li>
+            <li><a href="#ai-tools">AI工具</a></li>
+            <li><a href="#experience">经验</a></li>
+            <li><a href="#contact">联系</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero区域 -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🚀 寻找新机会</div>
+            <h1>
+                你好，我是<br>
+                <span class="highlight">资深后端开发工程师</span>
+            </h1>
+            <p class="hero-subtitle">
+                专注于 <span class="typing-text" id="typing"></span>
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">5+</span>
+                    <span class="stat-label">年开发经验</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">Java</span>
+                    <span class="stat-label">主力语言</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">Python</span>
+                    <span class="stat-label">自学精通</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">AI</span>
+                    <span class="stat-label">开发工具专家</span>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#contact" class="btn btn-primary">联系我 →</a>
+                <a href="#experience" class="btn btn-secondary">查看经验</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技能区域 -->
+    <section class="section" id="skills">
+        <div class="section-title">
+            <h2>技术栈</h2>
+            <p>5年开发历程中积累的丰富技术经验，从企业级Java开发到Python自动化</p>
+        </div>
+        <div class="skills-grid">
+            <div class="skill-card">
+                <div class="skill-icon">☕</div>
+                <h3>Java 生态</h3>
+                <p>精通Spring Boot、Spring Cloud微服务架构，具备大型分布式系统开发经验</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">Spring Boot</span>
+                    <span class="skill-tag">Spring Cloud</span>
+                    <span class="skill-tag">MyBatis</span>
+                    <span class="skill-tag">Maven/Gradle</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">🐍</div>
+                <h3>Python 开发</h3>
+                <p>自学Python，擅长数据分析、自动化脚本、爬虫开发及AI应用集成</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">Django/Flask</span>
+                    <span class="skill-tag">Pandas</span>
+                    <span class="skill-tag">Scrapy</span>
+                    <span class="skill-tag">FastAPI</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">🗄️</div>
+                <h3>数据库与缓存</h3>
+                <p>熟练运用关系型与非关系型数据库，具备高并发场景优化经验</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">MySQL</span>
+                    <span class="skill-tag">Redis</span>
+                    <span class="skill-tag">MongoDB</span>
+                    <span class="skill-tag">Elasticsearch</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">☁️</div>
+                <h3>云原生与DevOps</h3>
+                <p>熟悉Docker容器化部署，具备CI/CD流程搭建经验</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">Docker</span>
+                    <span class="skill-tag">Kubernetes</span>
+                    <span class="skill-tag">Jenkins</span>
+                    <span class="skill-tag">Linux</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">🤖</div>
+                <h3>AI 开发工具</h3>
+                <p>精通各类AI编程助手，能高效利用AI工具提升开发效率</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">Claude Code</span>
+                    <span class="skill-tag">OpenCode</span>
+                    <span class="skill-tag">Trae</span>
+                    <span class="skill-tag">Cursor</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">🔧</div>
+                <h3>前端与工具</h3>
+                <p>具备全栈开发能力，熟悉现代前端技术栈及开发工具</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">Vue.js</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">Git</span>
+                    <span class="skill-tag">RESTful API</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI工具区域 -->
+    <section class="section" id="ai-tools">
+        <div class="section-title">
+            <h2>AI 开发工具专家</h2>
+            <p>紧跟技术潮流，熟练运用各类AI编程助手，开发效率倍增</p>
+        </div>
+        <div class="ai-tools">
+            <div class="ai-grid">
+                <div class="ai-card">
+                    <div class="ai-logo">
+                        <svg height="50" width="50" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Claude</title><path d="M4.709 15.955l4.72-2.647.08-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.06 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.73-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.93-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312-.006.006z" fill="#D97757" fill-rule="nonzero"></path></svg>
+                    </div>
+                    <h3>Claude Code</h3>
+                    <p>Anthropic出品，代码理解与生成能力卓越，复杂逻辑处理首选</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-logo">
+                        <svg width='50' height='50' viewBox='0 0 240 300' fill='none' xmlns='http://www.w3.org/2000/svg'><g clip-path='url(#clip0_1401_86283)'><mask id='mask0_1401_86283' style='mask-type:luminance' maskUnits='userSpaceOnUse' x='0' y='0' width='240' height='300'><path d='M240 0H0V300H240V0Z' fill='white'/></mask><g mask='url(#mask0_1401_86283)'><path d='M180 240H60V120H180V240Z' fill='#4B4646'/><path d='M180 60H60V240H180V60ZM240 300H0V0H240V300Z' fill='#F1ECEC'/></g></g><defs><clipPath id='clip0_1401_86283'><rect width='240' height='300' fill='white'/></clipPath></defs></svg>
+                    </div>
+                    <h3>OpenCode</h3>
+                    <p>开源AI编程助手，灵活定制，社区驱动持续进化</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-logo">
+                        <svg height="50" width="50" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>TRAE</title><path d="M24 20.541H3.428v-3.426H0V3.4h24V20.54zM3.428 17.115h17.144V6.827H3.428v10.288zm8.573-5.196l-2.425 2.424-2.424-2.424 2.424-2.424 2.425 2.424zm6.857-.001l-2.424 2.423-2.425-2.423 2.425-2.425 2.424 2.425z" fill="#32F08C"></path></svg>
+                    </div>
+                    <h3>Trae</h3>
+                    <p>字节跳动出品，深度集成开发环境，中文支持优秀</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 代码展示 -->
+    <section class="section">
+        <div class="section-title">
+            <h2>代码风格</h2>
+            <p>注重代码质量，追求优雅高效的解决方案</p>
+        </div>
+        <div class="code-showcase">
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="code-dot dot-red"></div>
+                    <div class="code-dot dot-yellow"></div>
+                    <div class="code-dot dot-green"></div>
+                    <span class="code-title">Developer.java</span>
+                </div>
+                <div class="code-content">
+                    <div class="code-line">
+                        <span class="line-number">1</span>
+                        <span><span class="code-keyword">public class</span> <span class="code-class">Developer</span> {</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">2</span>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">private</span> String name = <span class="code-string">"资深工程师"</span>;</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">3</span>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">private int</span> experience = <span class="code-string">5</span>; <span class="code-comment">// 年</span></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">4</span>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">5</span>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">public</span> String <span class="code-function">solveProblem</span>(Challenge challenge) {</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">6</span>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> challenge.<span class="code-function">apply</span>(AI_TOOLS + EXPERIENCE);</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">7</span>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-number">8</span>
+                        <span>}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 经验时间线 -->
+    <section class="section" id="experience">
+        <div class="section-title">
+            <h2>工作经历</h2>
+            <p>5年持续成长的技术之路</p>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-year">2025 - 至今</div>
+                    <h3>AI系统架构师 / 独立开发者</h3>
+                    <p>独立设计与开发AI驱动的自动化交易系统，整合机器学习模型进行市场分析与交易决策。持续迭代优化策略算法，探索AI在金融领域的创新应用。全栈独立开发，涵盖数据采集、模型训练、策略回测、自动化执行等核心模块。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-year">2023 - 2024</div>
+                    <h3>技术创业 / 全栈开发</h3>
+                    <p>自主创业，为Web3项目提供宣发服务与活动策划。负责官网开发与维护，编写自动化脚本提升运营效率，涵盖数据抓取、社媒自动化、活动报名系统等。锻炼全栈能力与客户沟通技巧。</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-year">2020 - 2023</div>
+                    <h3>区块链DApp开发工程师</h3>
+                    <p>主导DAOStarter平台开发与维护，涵盖智能合约开发、Web3集成、去中心化治理等核心模块。深入掌握Solidity、Web3.js、智能合约安全审计等技术栈。<a href="https://x.com/DaoStarter" target="_blank" style="color: var(--primary); text-decoration: none;">查看项目 →</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系方式 -->
+    <section class="contact-section" id="contact">
+        <div class="section-title">
+            <h2>联系我</h2>
+            <p>期待与您交流技术，探讨合作机会</p>
+        </div>
+        <div class="contact-grid">
+            <a href="mailto:devmark@163.com" class="contact-item">
+                <div class="contact-icon">📧</div>
+                <div class="contact-info">
+                    <div class="contact-label">邮箱</div>
+                    <div class="contact-value">devmark@163.com</div>
+                </div>
+            </a>
+            <a href="https://devmark123.github.io/DevMark/" target="_blank" class="contact-item">
+                <div class="contact-icon">💼</div>
+                <div class="contact-info">
+                    <div class="contact-label">个人主页</div>
+                    <div class="contact-value">查看主页</div>
+                </div>
+            </a>
+            <a href="https://github.com/DevMark123" target="_blank" class="contact-item">
+                <div class="contact-icon">🐙</div>
+                <div class="contact-info">
+                    <div class="contact-label">GitHub</div>
+                    <div class="contact-value">查看项目</div>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 慵懒小肥猫 - 加菲猫图片 -->
+    <div class="lazy-cat-container" onclick="window.location.href='games.html'" title="去摸鱼~">
+        <div class="cat-bubble">摸鱼时间~<div class="bubble-cloud-1"></div></div>
+        <div class="lazy-cat">
+            <img src="garfield.png" alt="加菲猫">
+        </div>
+        <div class="cat-hint">点我去摸鱼~</div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>&lt;/&gt; 用代码改变世界，让技术创造价值</p>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem;">© 2026 资深Java/Python开发工程师</p>
+    </footer>
+
+    <script>
+        // 粒子背景
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // 打字机效果
+        const texts = ['Java后端开发', 'Python自动化', '微服务架构', 'AI辅助编程'];
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typingElement = document.getElementById('typing');
+
+        function type() {
+            const currentText = texts[textIndex];
+            
+            if (isDeleting) {
+                typingElement.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingElement.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentText.length) {
+                typeSpeed = 2000;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                textIndex = (textIndex + 1) % texts.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(type, typeSpeed);
+        }
+
+        type();
+    </script>
+</body>
+</html>

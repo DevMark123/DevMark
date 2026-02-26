@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小游戏中心 | Game Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00f5d4;
+            --secondary: #7b2cbf;
+            --accent: #ff006e;
+            --font-mono: Consolas, Monaco, 'Courier New', 'Lucida Console', monospace;
+            --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --light: #e0e0e0;
+            --code-bg: #1a1a2e;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--darker);
+            color: var(--light);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 245, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 110, 0.05) 0%, transparent 70%),
+                var(--darker);
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 245, 212, 0.1);
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* 主内容区 */
+        .container {
+            padding: 8rem 5% 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 游戏分类标签 */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid rgba(0, 245, 212, 0.2);
+            border-radius: 30px;
+            color: var(--light);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: var(--font-sans);
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: var(--primary);
+            color: var(--dark);
+            border-color: var(--primary);
+        }
+
+        /* 游戏网格 */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* 游戏卡片 */
+        .game-card {
+            background: var(--code-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .game-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 245, 212, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 245, 212, 0.15);
+        }
+
+        .game-thumbnail {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(123, 44, 191, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-thumbnail::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 50%, rgba(10, 10, 15, 0.8));
+        }
+
+        .game-info {
+            padding: 1.5rem;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .game-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .game-badge {
+            padding: 0.3rem 0.8rem;
+            background: rgba(0, 245, 212, 0.15);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-family: var(--font-mono);
+        }
+
+        .game-desc {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+        }
+
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 245, 212, 0.1);
+        }
+
+        .game-tags {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .game-tag {
+            font-size: 0.75rem;
+            color: rgba(224, 224, 224, 0.5);
+        }
+
+        .play-btn {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 245, 212, 0.4);
+        }
+
+        /* 即将上线卡片 */
+        .game-card.coming-soon {
+            opacity: 0.6;
+        }
+
+        .game-card.coming-soon .play-btn {
+            background: rgba(224, 224, 224, 0.1);
+            color: rgba(224, 224, 224, 0.5);
+            cursor: not-allowed;
+        }
+
+        .coming-soon-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.4rem 1rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* 统计栏 */
+        .stats-section {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--code-bg);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 245, 212, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            font-family: var(--font-mono);
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box p {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 3rem 5%;
+            border-top: 1px solid rgba(0, 245, 212, 0.1);
+            color: rgba(224, 224, 224, 0.5);
+            margin-top: 4rem;
+        }
+
+        footer p {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-tabs {
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- 导航栏 -->
+    <nav>
+        <a href="index.html" class="logo">&lt;Dev /&gt;</a>
+        <ul class="nav-links">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="share.html">视频分享</a></li>
+            <li><a href="games.html" style="color: var(--primary);">小游戏</a></li>
+        </ul>
+    </nav>
+
+    <!-- 主内容 -->
+    <div class="container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1>🎮 小游戏中心</h1>
+            <p>工作之余的放松时光，精选多款有趣的小游戏，持续更新中...</p>
+        </div>
+
+        <!-- 分类标签 -->
+        <div class="category-tabs">
+            <button class="tab-btn active" data-category="all">全部游戏</button>
+            <button class="tab-btn" data-category="idle">放置类</button>
+            <button class="tab-btn" data-category="puzzle">益智类</button>
+            <button class="tab-btn" data-category="action">动作类</button>
+            <button class="tab-btn" data-category="casual">休闲类</button>
+        </div>
+
+        <!-- 游戏网格 -->
+        <div class="games-grid" id="gamesGrid">
+            <!-- 赛博朋克：深海进化 -->
+            <div class="game-card" data-category="action">
+                <div class="game-thumbnail" style="background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(0, 255, 255, 0.2));">🐟</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">赛博朋克：深海进化</h3>
+                        <span class="game-badge" style="background: rgba(255, 0, 255, 0.2); color: #ff00ff;">NEW</span>
+                    </div>
+                    <p class="game-desc">赛博朋克版大鱼吃小鱼！从数据幼虫开始，通过吞噬进化，经历10种独特形态，最终成为赛博海神！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">🎮 动作</span>
+                            <span class="game-tag">🧬 进化</span>
+                        </div>
+                        <a href="cyber-fish-game.html" class="play-btn">开始游戏 →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 赛博贪吃蛇 -->
+            <div class="game-card" data-category="action">
+                <div class="game-thumbnail" style="background: linear-gradient(135deg, rgba(0, 245, 212, 0.2), rgba(255, 0, 110, 0.2));">🐍</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">赛博贪吃蛇</h3>
+                        <span class="game-badge" style="background: rgba(0, 245, 212, 0.2); color: #00f5d4;">HOT</span>
+                    </div>
+                    <p class="game-desc">赛博朋克风贪吃蛇！控制蛇吃掉数据块不断成长，支持多难度选择，挑战你的反应极限！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">🎮 动作</span>
+                            <span class="game-tag">🏃 反应</span>
+                        </div>
+                        <a href="snake-game.html" class="play-btn">开始游戏 →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 赛博点击器 -->
+            <div class="game-card" data-category="idle">
+                <div class="game-thumbnail">⚡</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">赛博点击器</h3>
+                        <span class="game-badge">HOT</span>
+                    </div>
+                    <p class="game-desc">程序员主题的放置点击游戏，收集算力，升级设备，从Hello World脚本一路进化到戴森球算力站！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">🎯 放置</span>
+                            <span class="game-tag">⚡ 点击</span>
+                        </div>
+                        <a href="game.html" class="play-btn">开始游戏 →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2048 -->
+            <div class="game-card coming-soon" data-category="puzzle">
+                <span class="coming-soon-badge">即将上线</span>
+                <div class="game-thumbnail">🔢</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">2048</h3>
+                        <span class="game-badge">NEW</span>
+                    </div>
+                    <p class="game-desc">经典数字益智游戏，滑动合并相同数字，挑战你的逻辑思维极限，看能否达到2048！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">🧩 益智</span>
+                            <span class="game-tag">🔢 数字</span>
+                        </div>
+                        <button class="play-btn" disabled>敬请期待</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 俄罗斯方块 -->
+            <div class="game-card coming-soon" data-category="puzzle">
+                <span class="coming-soon-badge">即将上线</span>
+                <div class="game-thumbnail">🧱</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">俄罗斯方块</h3>
+                        <span class="game-badge">CLASSIC</span>
+                    </div>
+                    <p class="game-desc">永恒的经典，旋转、移动、下落，消除整行获得高分，挑战你的手速与空间想象力！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">🧩 益智</span>
+                            <span class="game-tag">⚡ 反应</span>
+                        </div>
+                        <button class="play-btn" disabled>敬请期待</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打砖块 -->
+            <div class="game-card coming-soon" data-category="action">
+                <span class="coming-soon-badge">即将上线</span>
+                <div class="game-thumbnail">🧱</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">打砖块</h3>
+                        <span class="game-badge">ARCADE</span>
+                    </div>
+                    <p class="game-desc">街机经典重现，控制挡板反弹小球击碎所有砖块，收集道具获得特殊能力！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">🎮 动作</span>
+                            <span class="game-tag">🎯 街机</span>
+                        </div>
+                        <button class="play-btn" disabled>敬请期待</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 记忆翻牌 -->
+            <div class="game-card coming-soon" data-category="casual">
+                <span class="coming-soon-badge">即将上线</span>
+                <div class="game-thumbnail">🃏</div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">记忆翻牌</h3>
+                        <span class="game-badge">RELAX</span>
+                    </div>
+                    <p class="game-desc">考验记忆力的休闲小游戏，翻开卡片找到配对，用最少的步数完成挑战！</p>
+                    <div class="game-meta">
+                        <div class="game-tags">
+                            <span class="game-tag">☕ 休闲</span>
+                            <span class="game-tag">🧠 记忆</span>
+                        </div>
+                        <button class="play-btn" disabled>敬请期待</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计栏 -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>3</h3>
+                    <p>已上线游戏</p>
+                </div>
+                <div class="stat-box">
+                    <h3>3</h3>
+                    <p>即将上线</p>
+                </div>
+                <div class="stat-box">
+                    <h3>∞</h3>
+                    <p>游戏乐趣</p>
+                </div>
+                <div class="stat-box">
+                    <h3>100%</h3>
+                    <p>免费游玩</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>🎮 用游戏点缀生活，让快乐触手可及</p>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem;">© 2026 小游戏中心 | 持续更新中...</p>
+    </footer>
+
+    <script>
+        // 分类筛选功能
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const gameCards = document.querySelectorAll('.game-card');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 更新按钮状态
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // 筛选游戏
+                const category = btn.dataset.category;
+                gameCards.forEach(card => {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.style.display = 'block';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, 10);
+                    } else {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+
+        // 卡片入场动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        gameCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = `all 0.5s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
