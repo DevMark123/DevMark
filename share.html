@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI学习视频分享 | DevMark</title>
+    <title>AI学习内容分享 | DevMark</title>
     <style>
         * {
             margin: 0;
@@ -313,6 +313,11 @@
             border: 1px solid #333;
         }
 
+        .platform-badge.zhihu {
+            background: #0066FF;
+            color: white;
+        }
+
         .duration {
             position: absolute;
             bottom: 10px;
@@ -509,7 +514,7 @@
         <a href="index.html" class="logo">&lt;Dev /&gt;</a>
         <ul class="nav-links">
             <li><a href="index.html">首页</a></li>
-            <li><a href="share.html" class="active">视频分享</a></li>
+            <li><a href="share.html" class="active">内容分享</a></li>
             <li><a href="index.html#skills">技能</a></li>
             <li><a href="index.html#contact">联系</a></li>
         </ul>
@@ -517,8 +522,8 @@
 
     <!-- 页面标题 -->
     <header class="page-header">
-        <h1>🎬 <span class="highlight">AI学习视频分享</span></h1>
-        <p>精选B站、抖音优质AI学习资源，按时间排序，持续更新中...</p>
+        <h1>📚 <span class="highlight">AI学习内容分享</span></h1>
+        <p>精选B站、抖音、知乎优质AI学习资源，按时间排序，持续更新中...</p>
     </header>
 
     <!-- 筛选栏 -->
@@ -526,27 +531,44 @@
         <button class="filter-btn active" data-filter="all">全部</button>
         <button class="filter-btn" data-filter="bilibili">📺 B站</button>
         <button class="filter-btn" data-filter="douyin">🎵 抖音</button>
+        <button class="filter-btn" data-filter="zhihu">📘 知乎</button>
     </div>
 
-    <!-- 时间轴视频列表 -->
+    <!-- 时间轴内容列表 -->
     <div class="timeline-container" id="videoTimeline">
-        <!-- 视频数据将通过JS动态渲染 -->
+        <!-- 内容数据将通过JS动态渲染 -->
     </div>
 
-    <!-- 添加视频按钮 -->
-    <button class="add-video-btn" onclick="showAddModal()" title="添加新视频">+</button>
+    <!-- 添加内容按钮 -->
+    <button class="add-video-btn" onclick="showAddModal()" title="添加新内容">+</button>
 
     <!-- 页脚 -->
     <footer>
         <p>&lt;/&gt; 持续学习，不断进步</p>
-        <p style="margin-top: 0.5rem; font-size: 0.8rem;">© 2026 AI学习视频分享</p>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem;">© 2026 AI学习内容分享</p>
     </footer>
 
     <script>
-        // 视频数据 - 按日期排序（最新的在前）
+        // 内容数据 - 按日期排序（最新的在前）
         const videoData = [
             {
                 id: 1,
+                title: "CC Switch v3.10.3 - 安装与使用详细教程",
+                platform: "zhihu",
+                platformName: "知乎",
+                author: "知乎专栏",
+                authorAvatar: "",
+                thumbnail: "https://picsum.photos/seed/cc-switch/400/225",
+                duration: "",
+                date: "2026-02-28",
+                summary: "CC Switch 是一款跨平台桌面 All-in-One 助手工具，支持统一管理 Claude Code、Codex、OpenCode 和 Gemini CLI 的 API Provider、MCP 服务、Skills 扩展等配置。无需手动修改配置文件，只需在图形界面中点击切换即可。",
+                views: "",
+                likes: "",
+                url: "https://zhuanlan.zhihu.com/p/2010439384097367984",
+                tags: ["CC Switch", "Claude Code", "MCP", "API管理", "工具"]
+            },
+            {
+                id: 2,
                 title: "Agent Skills傻瓜式教程！26年最火AI技术就这？",
                 platform: "bilibili",
                 platformName: "B站",
@@ -730,7 +752,7 @@
                 <div class="video-thumbnail">
                     <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
                     <span class="platform-badge ${video.platform}">
-                        ${video.platform === 'bilibili' ? '📺' : '🎵'} ${video.platformName}
+                        ${video.platform === 'bilibili' ? '📺' : video.platform === 'zhihu' ? '📘' : '🎵'} ${video.platformName}
                     </span>
                 </div>
                 <div class="video-info">
@@ -762,11 +784,11 @@
             });
         });
 
-        // 添加视频模态框（简化版）
+        // 添加内容模态框（简化版）
         function showAddModal() {
-            const url = prompt('请输入视频链接（B站或抖音）：');
+            const url = prompt('请输入内容链接（B站、抖音或知乎）：');
             if (url) {
-                alert('功能开发中：将自动解析视频信息并添加到列表\n链接：' + url);
+                alert('功能开发中：将自动解析内容信息并添加到列表\n链接：' + url);
             }
         }
 
