@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>书房书本标志</title>
+  <rect width="512" height="512" rx="112" fill="#17443e"/>
+  <rect x="40" y="40" width="432" height="432" rx="88" fill="#20564e"/>
+  <path d="M106 144c52-23 99-20 142 10v213c-39-30-86-34-142-10V144Z" fill="#faf4e7"/>
+  <path d="M406 144c-52-23-99-20-142 10v213c39-30 86-34 142-10V144Z" fill="#f1e7d3"/>
+  <path d="M256 154v213" stroke="#c7b78f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M220 131h72v74l-36-25-36 25v-74Z" fill="#df9d69"/>
+  <path d="M139 204c29-10 56-10 80-1M293 203c26-9 53-9 80 1" stroke="#b8aa8a" stroke-width="9" stroke-linecap="round" opacity=".72"/>
+</svg>
