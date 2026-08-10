@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f1e7" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="书房" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./apple-touch-icon-v9.png" sizes="180x180" type="image/png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon-v9.png" sizes="180x180" />
+    <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-v9.png" />
+    <title>书房</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="app-view" class="app-view">
+      <section id="shelf-view" class="shelf-view">
+        <header class="shelf-header">
+          <div class="wordmark"><span class="tiny-mark">⌁</span> 书房</div>
+          <div class="shelf-actions">
+            <label class="import-button" for="book-import">导入 TXT<input id="book-import" type="file" accept=".txt,text/plain" /></label>
+          </div>
+        </header>
+        <section class="shelf-hero">
+          <div>
+            <p class="eyebrow">MY LIBRARY</p>
+            <h2>下午好，慢慢读。</h2>
+            <p>书籍、进度、书签与设置只保存在这台设备，断网也能阅读。</p>
+          </div>
+          <div id="library-count" class="library-count" aria-label="书籍数量"></div>
+        </section>
+        <section class="library-section" aria-labelledby="library-title">
+          <div class="section-heading"><h3 id="library-title">书架</h3><span id="import-message" class="import-message" role="status"></span></div>
+          <div id="book-list" class="book-list"></div>
+        </section>
+      </section>
+
+      <section id="reader-view" class="reader-view hidden" aria-live="polite">
+        <header class="reader-header">
+          <button id="back-to-shelf" class="icon-button" aria-label="返回书架">←</button>
+          <div class="reader-heading"><strong id="reader-book-title"></strong><span id="reader-chapter-title"></span></div>
+          <div class="reader-actions">
+            <button id="bookmark-button" class="icon-button" aria-label="添加书签">⌑</button>
+            <button id="toc-button" class="icon-button" aria-label="打开目录">☷</button>
+            <button id="settings-button" class="icon-button aa-button" aria-label="阅读设置">A<span>a</span></button>
+          </div>
+        </header>
+        <div class="reader-minimal-header" aria-hidden="true"><span id="reader-minimal-chapter"></span></div>
+        <aside id="toc-panel" class="toc-panel hidden" aria-label="目录与书签">
+          <div class="panel-heading"><strong>目录</strong><button id="close-toc" class="text-button">关闭</button></div>
+          <div id="toc-list" class="toc-list"></div>
+          <div class="bookmark-heading">书签</div>
+          <div id="bookmark-list" class="bookmark-list"></div>
+        </aside>
+        <article id="reading-page" class="reading-page" tabindex="0" aria-label="阅读正文">
+          <p id="page-text"></p>
+        </article>
+        <footer class="reader-footer">
+          <div class="reader-reading-status" aria-live="off"><span id="reader-current-time"></span><span id="reader-page-status">本章 0 / 0 页</span></div>
+          <div class="reader-footer-controls">
+            <button id="previous-page" class="page-control" aria-label="上一页">← 上一页</button>
+            <div class="progress-wrap"><div class="progress-track"><span id="progress-bar"></span></div><span id="progress-text">0%</span></div>
+            <button id="next-page" class="page-control" aria-label="下一页">下一页 →</button>
+          </div>
+        </footer>
+        <section id="settings-panel" class="settings-panel hidden" aria-label="阅读设置">
+          <div class="sheet-handle"></div>
+          <div class="settings-title-row"><h3>阅读设置</h3><button id="close-settings" class="text-button">完成</button></div>
+          <p class="setting-label">字体</p>
+          <div class="option-row font-row">
+            <button data-font="serif" class="selected">宋体</button><button data-font="sans">黑体</button><button data-font="kaiti">楷体</button>
+          </div>
+          <p class="setting-label">字号</p>
+          <div class="size-control"><button id="decrease-font" aria-label="减小字号">−</button><span id="font-size-label">21</span><button id="increase-font" aria-label="增大字号">＋</button></div>
+          <p class="setting-label">行距</p>
+          <div class="option-row"><button data-line="1.7">紧凑</button><button data-line="1.95" class="selected">舒展</button><button data-line="2.2">宽松</button></div>
+          <p class="setting-label">背景</p>
+          <div class="theme-row"><button data-theme="paper" class="theme-dot paper selected" aria-label="纸白"></button><button data-theme="sepia" class="theme-dot sepia" aria-label="暖米色"></button><button data-theme="night" class="theme-dot night" aria-label="夜间"></button></div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
