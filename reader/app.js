@@ -29,7 +29,10 @@ const DEFAULT_STATE = {
   progress: {},
   bookmarks: {}
 };
-const CHAPTER_PATTERN = /^(第[0-9零一二三四五六七八九十百千万两]+[章节卷回].{0,38}|楔子|序章|终章|番外.*)$/gm;
+// 每次调整目录识别时递增；已导入的书会在首次打开时自动重建目录。
+const CHAPTER_PARSER_VERSION = 2;
+const MARKDOWN_HEADING_PATTERN = /^[\t \u3000]*#{1,6}[\t \u3000]+(.{1,120}?)[\t \u3000]*$/gm;
+const PLAIN_CHAPTER_PATTERN = /^[\t \u3000]*(第[0-9零一二三四五六七八九十百千万两]+[章节卷回].{0,80}|(?:楔子|序章|终章|番外|后记|完本感言).{0,80})[\t \u3000]*$/gm;
 
 let databasePromise;
 let state = structuredClone(DEFAULT_STATE);
@@ -133,10 +136,13 @@ function newId() {
 
 function makeChapters(content) {
   const text = content.replace(/\r/g, "");
-  const matches = [...text.matchAll(CHAPTER_PATTERN)];
+  // 有 Markdown 标题时，只使用它们，避免正文中类似“第一章”的句子被误判。
+  const markdownMatches = [...text.matchAll(MARKDOWN_HEADING_PATTERN)];
+  const sourceMatches = markdownMatches.length ? markdownMatches : [...text.matchAll(PLAIN_CHAPTER_PATTERN)];
+  const matches = sourceMatches.map((match) => ({ title: match[1].trim(), start: match.index }));
   const made = [];
-  if (matches.length && matches[0].index > 0) made.push({ title: "开始阅读", start: 0 });
-  matches.forEach((match) => made.push({ title: match[1].trim(), start: match.index }));
+  if (matches.length && matches[0].start > 0) made.push({ title: "开始阅读", start: 0 });
+  matches.forEach((match) => made.push(match));
   if (!made.length) made.push({ title: "开始阅读", start: 0 });
   return made.map((chapter, index) => ({
     ...chapter,
@@ -312,9 +318,11 @@ async function openBook(id) {
   await frame();
   currentBook = await readStore("books", id);
   if (!currentBook) throw new Error("找不到这本本机书籍。");
-  chapters = currentBook.chapters?.length ? currentBook.chapters : makeChapters(currentBook.content);
-  if (!currentBook.chapters?.length) {
+  const shouldRefreshChapters = !currentBook.chapters?.length || currentBook.chapterParserVersion !== CHAPTER_PARSER_VERSION;
+  chapters = shouldRefreshChapters ? makeChapters(currentBook.content) : currentBook.chapters;
+  if (shouldRefreshChapters) {
     currentBook.chapters = chapters;
+    currentBook.chapterParserVersion = CHAPTER_PARSER_VERSION;
     await writeStore("books", currentBook);
   }
   applySettings();
@@ -397,7 +405,7 @@ importInput.addEventListener("change", async () => {
     const metadata = bookMetadata(file, content);
     const book = {
       id: newId(), filename: file.name, ...metadata, size: file.size, type: "TXT",
-      updatedAt: new Date().toISOString(), content, chapters: makeChapters(content)
+      updatedAt: new Date().toISOString(), content, chapters: makeChapters(content), chapterParserVersion: CHAPTER_PARSER_VERSION
     };
     await writeStore("books", book);
     importMessage.textContent = "已保存到本机，可离线阅读。";
@@ -504,5 +512,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=2").catch(() => {});
 }
