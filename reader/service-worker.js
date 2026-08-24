@@ -1,5 +1,5 @@
-const CACHE = "devmark-reader-v2";
-const SHELL = ["./", "./index.html", "./styles.css?v=2", "./app.js?v=2", "./manifest.webmanifest?v=2", "./apple-touch-icon-v9.png", "./app-icon-192.png?v=2", "./app-icon-512.png?v=2"];
+const CACHE = "devmark-reader-v3";
+const SHELL = ["./", "./index.html", "./styles.css?v=2", "./app.js?v=3", "./manifest.webmanifest?v=2", "./apple-touch-icon-v9.png", "./app-icon-192.png?v=2", "./app-icon-512.png?v=2"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));

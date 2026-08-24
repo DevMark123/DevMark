@@ -31,6 +31,7 @@ const DEFAULT_STATE = {
 };
 // 每次调整目录识别时递增；已导入的书会在首次打开时自动重建目录。
 const CHAPTER_PARSER_VERSION = 2;
+const TEXT_NORMALIZATION_VERSION = 1;
 const MARKDOWN_HEADING_PATTERN = /^[\t \u3000]*#{1,6}[\t \u3000]+(.{1,120}?)[\t \u3000]*$/gm;
 const PLAIN_CHAPTER_PATTERN = /^[\t \u3000]*(第[0-9零一二三四五六七八九十百千万两]+[章节卷回].{0,80}|(?:楔子|序章|终章|番外|后记|完本感言).{0,80})[\t \u3000]*$/gm;
 
@@ -132,6 +133,17 @@ function frame() {
 
 function newId() {
   return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function normalizeReadingText(content) {
+  return content
+    .replace(/\r/g, "")
+    .replace(/\n[\t \u3000]*\n+/g, "\n");
+}
+
+function normalizedOffset(content, offset) {
+  const safeOffset = Math.min(Math.max(Number(offset) || 0, 0), content.length);
+  return normalizeReadingText(content.slice(0, safeOffset)).length;
 }
 
 function makeChapters(content) {
@@ -318,13 +330,40 @@ async function openBook(id) {
   await frame();
   currentBook = await readStore("books", id);
   if (!currentBook) throw new Error("找不到这本本机书籍。");
+  let bookChanged = false;
+  let stateChanged = false;
+  if (currentBook.textNormalizationVersion !== TEXT_NORMALIZATION_VERSION) {
+    const sourceContent = currentBook.content || "";
+    const normalizedContent = normalizeReadingText(sourceContent);
+    if (normalizedContent !== sourceContent) {
+      const progress = state.progress[id];
+      if (progress) {
+        progress.offset = normalizedOffset(sourceContent, progress.offset);
+        stateChanged = true;
+      }
+      if (state.bookmarks[id]?.length) {
+        state.bookmarks[id] = state.bookmarks[id].map((bookmark) => ({
+          ...bookmark,
+          offset: normalizedOffset(sourceContent, bookmark.offset)
+        }));
+        stateChanged = true;
+      }
+    }
+    currentBook.content = normalizedContent;
+    currentBook.chapters = makeChapters(normalizedContent);
+    currentBook.chapterParserVersion = CHAPTER_PARSER_VERSION;
+    currentBook.textNormalizationVersion = TEXT_NORMALIZATION_VERSION;
+    bookChanged = true;
+  }
   const shouldRefreshChapters = !currentBook.chapters?.length || currentBook.chapterParserVersion !== CHAPTER_PARSER_VERSION;
   chapters = shouldRefreshChapters ? makeChapters(currentBook.content) : currentBook.chapters;
   if (shouldRefreshChapters) {
     currentBook.chapters = chapters;
     currentBook.chapterParserVersion = CHAPTER_PARSER_VERSION;
-    await writeStore("books", currentBook);
+    bookChanged = true;
   }
+  if (bookChanged) await writeStore("books", currentBook);
+  if (stateChanged) await saveState();
   applySettings();
   const offset = state.progress[id]?.offset || 0;
   loadChapter(chapterIndexForOffset(offset), offset, false);
@@ -401,11 +440,12 @@ importInput.addEventListener("change", async () => {
   importMessage.textContent = "正在保存到这台设备…";
   try {
     await frame();
-    const content = (await file.text()).replace(/\r/g, "");
+    const content = normalizeReadingText(await file.text());
     const metadata = bookMetadata(file, content);
     const book = {
       id: newId(), filename: file.name, ...metadata, size: file.size, type: "TXT",
-      updatedAt: new Date().toISOString(), content, chapters: makeChapters(content), chapterParserVersion: CHAPTER_PARSER_VERSION
+      updatedAt: new Date().toISOString(), content, chapters: makeChapters(content),
+      chapterParserVersion: CHAPTER_PARSER_VERSION, textNormalizationVersion: TEXT_NORMALIZATION_VERSION
     };
     await writeStore("books", book);
     importMessage.textContent = "已保存到本机，可离线阅读。";
@@ -512,5 +552,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=2").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=3").catch(() => {});
 }
