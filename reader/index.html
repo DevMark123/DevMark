@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="./apple-touch-icon-v9.png" sizes="180x180" />
     <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-v9.png" />
     <title>书房</title>
-    <link rel="stylesheet" href="./styles.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=3" />
   </head>
   <body>
     <main id="app-view" class="app-view">
@@ -28,7 +28,7 @@
           <div>
             <p class="eyebrow">MY LIBRARY</p>
             <h2>下午好，慢慢读。</h2>
-            <p>书籍、进度、书签与设置只保存在这台设备，断网也能阅读。</p>
+            <p>书籍、进度与设置只保存在这台设备，断网也能阅读。</p>
           </div>
           <div id="library-count" class="library-count" aria-label="书籍数量"></div>
         </section>
@@ -43,17 +43,18 @@
           <button id="back-to-shelf" class="icon-button" aria-label="返回书架">←</button>
           <div class="reader-heading"><strong id="reader-book-title"></strong><span id="reader-chapter-title"></span></div>
           <div class="reader-actions">
-            <button id="bookmark-button" class="icon-button" aria-label="添加书签">⌑</button>
             <button id="toc-button" class="icon-button" aria-label="打开目录">☷</button>
-            <button id="settings-button" class="icon-button aa-button" aria-label="阅读设置">A<span>a</span></button>
+            <button id="settings-button" class="icon-button" aria-label="阅读设置">
+              <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h6m4 0h6M4 17h10m4 0h2M10 4v6m4 4v6" />
+              </svg>
+            </button>
           </div>
         </header>
         <div class="reader-minimal-header" aria-hidden="true"><span id="reader-minimal-chapter"></span></div>
-        <aside id="toc-panel" class="toc-panel hidden" aria-label="目录与书签">
+        <aside id="toc-panel" class="toc-panel hidden" aria-label="目录">
           <div class="panel-heading"><strong>目录</strong><button id="close-toc" class="text-button">关闭</button></div>
           <div id="toc-list" class="toc-list"></div>
-          <div class="bookmark-heading">书签</div>
-          <div id="bookmark-list" class="bookmark-list"></div>
         </aside>
         <article id="reading-page" class="reading-page" tabindex="0" aria-label="阅读正文">
           <p id="page-text"></p>
@@ -69,9 +70,9 @@
         <section id="settings-panel" class="settings-panel hidden" aria-label="阅读设置">
           <div class="sheet-handle"></div>
           <div class="settings-title-row"><h3>阅读设置</h3><button id="close-settings" class="text-button">完成</button></div>
-          <p class="setting-label">字体</p>
-          <div class="option-row font-row">
-            <button data-font="serif" class="selected">宋体</button><button data-font="sans">黑体</button><button data-font="kaiti">楷体</button>
+          <p class="setting-label">字体粗细</p>
+          <div class="option-row weight-row">
+            <button data-weight="300">偏细</button><button data-weight="400" class="selected">标准</button><button data-weight="600">加粗</button>
           </div>
           <p class="setting-label">字号</p>
           <div class="size-control"><button id="decrease-font" aria-label="减小字号">−</button><span id="font-size-label">21</span><button id="increase-font" aria-label="增大字号">＋</button></div>
@@ -82,6 +83,6 @@
         </section>
       </section>
     </main>
-    <script type="module" src="./app.js?v=4"></script>
+    <script type="module" src="./app.js?v=5"></script>
   </body>
 </html>

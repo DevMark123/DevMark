@@ -16,18 +16,15 @@ const progressBar = document.querySelector("#progress-bar");
 const progressText = document.querySelector("#progress-text");
 const tocPanel = document.querySelector("#toc-panel");
 const tocList = document.querySelector("#toc-list");
-const bookmarkList = document.querySelector("#bookmark-list");
 const settingsPanel = document.querySelector("#settings-panel");
-const bookmarkButton = document.querySelector("#bookmark-button");
 const fontSizeLabel = document.querySelector("#font-size-label");
 
 const DB_NAME = "devmark-reader";
 const DB_VERSION = 1;
 const STATE_KEY = "reader-state";
 const DEFAULT_STATE = {
-  settings: { font: "serif", fontSize: 21, lineHeight: 1.95, theme: "paper" },
-  progress: {},
-  bookmarks: {}
+  settings: { fontWeight: 400, fontSize: 21, lineHeight: 1.95, theme: "paper" },
+  progress: {}
 };
 // 每次调整目录识别时递增；已导入的书会在首次打开时自动重建目录。
 const CHAPTER_PARSER_VERSION = 2;
@@ -110,8 +107,7 @@ async function removeStore(storeName, key) {
 function normalizeState(value) {
   return {
     settings: { ...DEFAULT_STATE.settings, ...(value?.settings || {}) },
-    progress: value?.progress || {},
-    bookmarks: value?.bookmarks || {}
+    progress: value?.progress || {}
   };
 }
 
@@ -275,13 +271,14 @@ function percentForPage() {
 }
 
 function applySettings() {
-  readerView.classList.remove("theme-paper", "theme-sepia", "theme-night", "font-serif", "font-sans", "font-kaiti");
-  readerView.classList.add(`theme-${state.settings.theme}`, `font-${state.settings.font}`);
+  readerView.classList.remove("theme-paper", "theme-sepia", "theme-night");
+  readerView.classList.add(`theme-${state.settings.theme}`);
   applyAppChrome(state.settings.theme);
   pageText.style.fontSize = `${state.settings.fontSize}px`;
   pageText.style.lineHeight = state.settings.lineHeight;
+  pageText.style.fontWeight = state.settings.fontWeight;
   fontSizeLabel.textContent = state.settings.fontSize;
-  document.querySelectorAll("[data-font]").forEach((button) => button.classList.toggle("selected", button.dataset.font === state.settings.font));
+  document.querySelectorAll("[data-weight]").forEach((button) => button.classList.toggle("selected", Number(button.dataset.weight) === Number(state.settings.fontWeight)));
   document.querySelectorAll("[data-line]").forEach((button) => button.classList.toggle("selected", Number(button.dataset.line) === Number(state.settings.lineHeight)));
   document.querySelectorAll("[data-theme]").forEach((button) => button.classList.toggle("selected", button.dataset.theme === state.settings.theme));
 }
@@ -305,9 +302,6 @@ function updateReader(save = true, pageTurn = null) {
     void pageText.offsetWidth;
     pageText.classList.add(`page-turn-${pageTurn}`);
   }
-  const isBookmarked = (state.bookmarks[currentBook.id] || []).some((item) => item.offset === offset);
-  bookmarkButton.classList.toggle("bookmarked", isBookmarked);
-  bookmarkButton.textContent = isBookmarked ? "★" : "⌑";
   if (save) {
     state.progress[currentBook.id] = { offset, chapter: currentChapterIndex, page: currentPage, percent, updatedAt: new Date().toISOString() };
     saveState().catch(() => {});
@@ -316,8 +310,6 @@ function updateReader(save = true, pageTurn = null) {
 
 function renderToc() {
   tocList.innerHTML = chapters.map((chapter) => `<button class="toc-item" data-chapter-index="${chapter.index}">${escapeHtml(chapter.title)}</button>`).join("");
-  const marks = state.bookmarks[currentBook.id] || [];
-  bookmarkList.innerHTML = marks.length ? marks.map((mark) => `<button class="bookmark-item" data-bookmark-offset="${mark.offset}">${escapeHtml(mark.chapter || "书签")}</button>`).join("") : '<p class="empty-note">还没有书签。</p>';
 }
 
 function chapterIndexForOffset(offset) {
@@ -355,13 +347,6 @@ async function openBook(id) {
       const progress = state.progress[id];
       if (progress) {
         progress.offset = normalizedOffset(sourceContent, progress.offset);
-        stateChanged = true;
-      }
-      if (state.bookmarks[id]?.length) {
-        state.bookmarks[id] = state.bookmarks[id].map((bookmark) => ({
-          ...bookmark,
-          offset: normalizedOffset(sourceContent, bookmark.offset)
-        }));
         stateChanged = true;
       }
     }
@@ -431,6 +416,10 @@ function hideReaderControls() {
   settingsPanel.classList.add("hidden");
 }
 
+function isSettingsOpen() {
+  return !settingsPanel.classList.contains("hidden");
+}
+
 bookList.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
   const openId = button?.dataset.openBook;
@@ -445,7 +434,6 @@ bookList.addEventListener("click", async (event) => {
   if (deleteId && confirm("确定从这台设备删除这本书吗？")) {
     await removeStore("books", deleteId);
     delete state.progress[deleteId];
-    delete state.bookmarks[deleteId];
     await saveState();
     await refreshBooks();
   }
@@ -479,30 +467,15 @@ document.querySelector("#close-toc").addEventListener("click", () => tocPanel.cl
 document.querySelector("#settings-button").addEventListener("click", () => settingsPanel.classList.toggle("hidden"));
 document.querySelector("#close-settings").addEventListener("click", () => settingsPanel.classList.add("hidden"));
 
-bookmarkButton.addEventListener("click", () => {
-  const chapter = activeChapter();
-  const offset = chapter.start + pages[currentPage].start;
-  const marks = state.bookmarks[currentBook.id] || [];
-  const index = marks.findIndex((item) => item.offset === offset);
-  if (index >= 0) marks.splice(index, 1);
-  else marks.push({ offset, chapter: chapter.title, chapterIndex: currentChapterIndex, page: currentPage });
-  state.bookmarks[currentBook.id] = marks.sort((a, b) => a.offset - b.offset);
-  saveState().catch(() => {});
-  if (!tocPanel.classList.contains("hidden")) renderToc();
-  updateReader(false);
+["click", "pointerdown", "pointerup"].forEach((eventName) => {
+  settingsPanel.addEventListener(eventName, (event) => event.stopPropagation());
 });
 
 tocPanel.addEventListener("click", (event) => {
   const chapterButton = event.target.closest("[data-chapter-index]");
-  const bookmarkButton = event.target.closest("[data-bookmark-offset]");
   if (chapterButton) {
     tocPanel.classList.add("hidden");
     loadChapter(Number(chapterButton.dataset.chapterIndex), null, true);
-    hideReaderControls();
-  } else if (bookmarkButton) {
-    const offset = Number(bookmarkButton.dataset.bookmarkOffset);
-    tocPanel.classList.add("hidden");
-    loadChapter(chapterIndexForOffset(offset), offset, true);
     hideReaderControls();
   }
 });
@@ -514,13 +487,14 @@ function updateSetting(change) {
   saveState().catch(() => {});
 }
 
-document.querySelectorAll("[data-font]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.font = button.dataset.font; })));
+document.querySelectorAll("[data-weight]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.fontWeight = Number(button.dataset.weight); })));
 document.querySelectorAll("[data-line]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.lineHeight = Number(button.dataset.line); })));
 document.querySelectorAll("[data-theme]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.theme = button.dataset.theme; })));
 document.querySelector("#decrease-font").addEventListener("click", () => updateSetting(() => { state.settings.fontSize = Math.max(15, state.settings.fontSize - 1); }));
 document.querySelector("#increase-font").addEventListener("click", () => updateSetting(() => { state.settings.fontSize = Math.min(32, state.settings.fontSize + 1); }));
 
 readingPage.addEventListener("click", (event) => {
+  if (isSettingsOpen()) return;
   if (suppressPageClick) { suppressPageClick = false; return; }
   if (event.target.closest("button")) return;
   if (readerView.classList.contains("controls-visible")) {
@@ -537,8 +511,12 @@ readingPage.addEventListener("click", (event) => {
     goNextPage();
   }
 });
-readingPage.addEventListener("pointerdown", (event) => { pointerStart = event.clientX; });
+readingPage.addEventListener("pointerdown", (event) => {
+  if (isSettingsOpen()) { pointerStart = null; return; }
+  pointerStart = event.clientX;
+});
 readingPage.addEventListener("pointerup", (event) => {
+  if (isSettingsOpen()) { pointerStart = null; return; }
   if (pointerStart === null) return;
   const delta = event.clientX - pointerStart;
   pointerStart = null;
@@ -547,6 +525,7 @@ readingPage.addEventListener("pointerup", (event) => {
 });
 readingPage.addEventListener("wheel", (event) => event.preventDefault(), { passive: false });
 readingPage.addEventListener("keydown", (event) => {
+  if (isSettingsOpen()) return;
   if (event.key === "ArrowLeft") { event.preventDefault(); hideReaderControls(); goPreviousPage(); }
   if (event.key === "ArrowRight" || event.key === " ") { event.preventDefault(); hideReaderControls(); goNextPage(); }
 });
@@ -569,5 +548,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=4").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=5").catch(() => {});
 }

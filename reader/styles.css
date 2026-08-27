@@ -81,8 +81,7 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 .reader-heading strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 18px var(--serif); }
 .reader-heading span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:12px; }
 .reader-actions { gap:2px; }
-.aa-button { font: 20px var(--serif); }
-.aa-button span { font-size:14px; }
+.settings-icon { width:23px; height:23px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .reader-minimal-header { position:fixed; z-index:8; top:0; right:0; left:0; height:38px; display:flex; align-items:center; justify-content:center; padding:calc(env(safe-area-inset-top, 0px) + 8px) 18px 6px; overflow:hidden; color:var(--muted); background:linear-gradient(to bottom, var(--paper) 72%, transparent); font-size:11px; pointer-events:none; transition:opacity .16s ease; }
 .reader-minimal-header span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .reader-view.controls-visible .reader-minimal-header { opacity:0; }
@@ -104,10 +103,9 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 .progress-track span { display:block; width:0; height:100%; background:var(--teal); transition:width .18s; }
 .toc-panel { position:fixed; z-index:20; top: 17px; left:max(18px, calc((100vw - 1080px) / 2)); bottom:17px; width:min(360px, calc(100% - 36px)); padding:20px; overflow:auto; border:1px solid var(--line); border-radius:19px; background:#fffdf8; box-shadow:0 18px 50px rgba(46,36,19,.18); }
 .panel-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font:600 21px var(--serif); }
-.toc-list, .bookmark-list { display:grid; gap:3px; }
-.toc-item, .bookmark-item { width:100%; overflow:hidden; border:0; border-radius:8px; padding:10px 8px; color:#43443d; background:transparent; text-align:left; text-overflow:ellipsis; white-space:nowrap; font-size:14px; }
-.toc-item:hover, .bookmark-item:hover { color:var(--teal); background:var(--teal-soft); }
-.bookmark-heading { margin: 25px 0 7px; padding-top:15px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; font-weight:800; letter-spacing:.12em; }
+.toc-list { display:grid; gap:3px; }
+.toc-item { width:100%; overflow:hidden; border:0; border-radius:8px; padding:10px 8px; color:var(--ink); background:transparent; text-align:left; text-overflow:ellipsis; white-space:nowrap; font-size:14px; }
+.toc-item:hover { color:var(--teal); background:var(--teal-soft); }
 .empty-note { color:var(--muted); font-size:13px; }
 .settings-panel { position:fixed; z-index:30; right:50%; bottom:0; width:min(610px, 100%); padding:10px 26px 28px; border:1px solid var(--line); border-bottom:0; border-radius:24px 24px 0 0; background:#fffdf8; box-shadow:0 -12px 40px rgba(35,30,18,.12); transform:translateX(50%); }
 .sheet-handle { width:42px; height:4px; margin:0 auto 13px; border-radius:99px; background:#d0cbc1; }
@@ -130,8 +128,6 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 .reader-view.theme-night .settings-panel, .reader-view.theme-night .toc-panel { color:#e5e0d3; background:#282c29; }
 .reader-view.theme-night .reader-header, .reader-view.theme-night .reader-minimal-header { background:linear-gradient(to bottom, var(--paper) 72%, transparent); }
 .reader-view.theme-night .reader-reading-status, .reader-view.theme-night .reader-footer-controls { background:linear-gradient(to top, var(--paper) 75%, transparent); }
-.reader-view.font-sans .reading-page p { font-family:var(--sans); }.reader-view.font-kaiti .reading-page p { font-family:KaiTi, STKaiti, "Kaiti SC", var(--serif); }
-
 .pagination-probe { position:fixed; top:0; left:-200vw; overflow:hidden; visibility:hidden; pointer-events:none; }
 @media (prefers-reduced-motion: reduce) { .reading-page p.page-turn-next, .reading-page p.page-turn-previous { animation:none; } }
 
