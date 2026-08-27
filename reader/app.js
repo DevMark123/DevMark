@@ -32,6 +32,11 @@ const DEFAULT_STATE = {
 // 每次调整目录识别时递增；已导入的书会在首次打开时自动重建目录。
 const CHAPTER_PARSER_VERSION = 2;
 const TEXT_NORMALIZATION_VERSION = 1;
+const THEME_COLORS = {
+  paper: "#f6f1e7",
+  sepia: "#eee0bf",
+  night: "#202321"
+};
 const MARKDOWN_HEADING_PATTERN = /^[\t \u3000]*#{1,6}[\t \u3000]+(.{1,120}?)[\t \u3000]*$/gm;
 const PLAIN_CHAPTER_PATTERN = /^[\t \u3000]*(第[0-9零一二三四五六七八九十百千万两]+[章节卷回].{0,80}|(?:楔子|序章|终章|番外|后记|完本感言).{0,80})[\t \u3000]*$/gm;
 
@@ -144,6 +149,16 @@ function normalizeReadingText(content) {
 function normalizedOffset(content, offset) {
   const safeOffset = Math.min(Math.max(Number(offset) || 0, 0), content.length);
   return normalizeReadingText(content.slice(0, safeOffset)).length;
+}
+
+function applyAppChrome(theme) {
+  const color = THEME_COLORS[theme] || THEME_COLORS.paper;
+  document.documentElement.style.backgroundColor = color;
+  document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
+  document.body.style.backgroundColor = color;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
+  document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+    ?.setAttribute("content", theme === "night" ? "black" : "default");
 }
 
 function makeChapters(content) {
@@ -262,6 +277,7 @@ function percentForPage() {
 function applySettings() {
   readerView.classList.remove("theme-paper", "theme-sepia", "theme-night", "font-serif", "font-sans", "font-kaiti");
   readerView.classList.add(`theme-${state.settings.theme}`, `font-${state.settings.font}`);
+  applyAppChrome(state.settings.theme);
   pageText.style.fontSize = `${state.settings.fontSize}px`;
   pageText.style.lineHeight = state.settings.lineHeight;
   fontSizeLabel.textContent = state.settings.fontSize;
@@ -377,6 +393,7 @@ function closeBook() {
   readerView.classList.add("hidden");
   shelfView.classList.remove("hidden");
   document.body.classList.remove("reading-mode");
+  applyAppChrome("paper");
   refreshBooks().catch(() => {});
 }
 
@@ -552,5 +569,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=3").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=4").catch(() => {});
 }
