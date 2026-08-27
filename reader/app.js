@@ -10,6 +10,10 @@ const pageText = document.querySelector("#page-text");
 const readerBookTitle = document.querySelector("#reader-book-title");
 const readerChapterTitle = document.querySelector("#reader-chapter-title");
 const readerMinimalChapter = document.querySelector("#reader-minimal-chapter");
+const readerHeader = document.querySelector(".reader-header");
+const readerMinimalHeader = document.querySelector(".reader-minimal-header");
+const readerReadingStatus = document.querySelector(".reader-reading-status");
+const readerFooterControls = document.querySelector(".reader-footer-controls");
 const readerCurrentTime = document.querySelector("#reader-current-time");
 const readerPageStatus = document.querySelector("#reader-page-status");
 const progressBar = document.querySelector("#progress-bar");
@@ -149,9 +153,15 @@ function normalizedOffset(content, offset) {
 
 function applyAppChrome(theme) {
   const color = THEME_COLORS[theme] || THEME_COLORS.paper;
+  const topGradient = `linear-gradient(to bottom, ${color} 72%, transparent)`;
+  const bottomGradient = `linear-gradient(to top, ${color} 75%, transparent)`;
   document.documentElement.style.backgroundColor = color;
   document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
   document.body.style.backgroundColor = color;
+  readerHeader.style.backgroundImage = topGradient;
+  readerMinimalHeader.style.backgroundImage = topGradient;
+  readerReadingStatus.style.backgroundImage = bottomGradient;
+  readerFooterControls.style.backgroundImage = bottomGradient;
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
   document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
     ?.setAttribute("content", theme === "night" ? "black" : "default");
@@ -548,5 +558,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=5").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=6").catch(() => {});
 }
