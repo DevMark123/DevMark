@@ -9,15 +9,15 @@ const readingPage = document.querySelector("#reading-page");
 const pageText = document.querySelector("#page-text");
 const readerBookTitle = document.querySelector("#reader-book-title");
 const readerChapterTitle = document.querySelector("#reader-chapter-title");
-const readerMinimalChapter = document.querySelector("#reader-minimal-chapter");
 const readerHeader = document.querySelector(".reader-header");
-const readerMinimalHeader = document.querySelector(".reader-minimal-header");
 const readerReadingStatus = document.querySelector(".reader-reading-status");
 const readerFooterControls = document.querySelector(".reader-footer-controls");
 const readerCurrentTime = document.querySelector("#reader-current-time");
 const readerPageStatus = document.querySelector("#reader-page-status");
-const progressBar = document.querySelector("#progress-bar");
+const chapterProgress = document.querySelector("#chapter-progress");
 const progressText = document.querySelector("#progress-text");
+const previousChapterButton = document.querySelector("#previous-chapter");
+const nextChapterButton = document.querySelector("#next-chapter");
 const tocPanel = document.querySelector("#toc-panel");
 const tocList = document.querySelector("#toc-list");
 const settingsPanel = document.querySelector("#settings-panel");
@@ -159,7 +159,6 @@ function applyAppChrome(theme) {
   document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
   document.body.style.backgroundColor = color;
   readerHeader.style.backgroundImage = topGradient;
-  readerMinimalHeader.style.backgroundImage = topGradient;
   readerReadingStatus.style.backgroundImage = bottomGradient;
   readerFooterControls.style.backgroundImage = bottomGradient;
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
@@ -302,10 +301,15 @@ function updateReader(save = true, pageTurn = null) {
   pageText.textContent = pages[currentPage].text;
   readerBookTitle.textContent = currentBook.title;
   readerChapterTitle.textContent = chapter.title;
-  readerMinimalChapter.textContent = chapter.title;
-  progressBar.style.width = `${percent}%`;
+  chapterProgress.max = Math.max(1, pages.length - 1);
+  chapterProgress.value = pages.length <= 1 ? 1 : currentPage;
+  chapterProgress.disabled = pages.length <= 1;
+  chapterProgress.style.setProperty("--chapter-progress", `${pages.length <= 1 ? 100 : (currentPage / (pages.length - 1)) * 100}%`);
+  chapterProgress.setAttribute("aria-valuetext", `本章第 ${currentPage + 1} 页，共 ${pages.length} 页`);
   progressText.textContent = `本章 ${currentPage + 1} / ${pages.length} 页 · 全书 ${percent}%`;
   readerPageStatus.textContent = `本章 ${currentPage + 1} / ${pages.length} 页`;
+  previousChapterButton.disabled = currentChapterIndex <= 0;
+  nextChapterButton.disabled = currentChapterIndex >= chapters.length - 1;
   updateReaderClock();
   if (pageTurn) {
     pageText.classList.remove("page-turn-next", "page-turn-previous");
@@ -319,7 +323,11 @@ function updateReader(save = true, pageTurn = null) {
 }
 
 function renderToc() {
-  tocList.innerHTML = chapters.map((chapter) => `<button class="toc-item" data-chapter-index="${chapter.index}">${escapeHtml(chapter.title)}</button>`).join("");
+  tocList.innerHTML = chapters.map((chapter) => {
+    const isCurrent = chapter.index === currentChapterIndex;
+    return `<button class="toc-item${isCurrent ? " current" : ""}" data-chapter-index="${chapter.index}"${isCurrent ? ' aria-current="true"' : ""}>${escapeHtml(chapter.title)}</button>`;
+  }).join("");
+  requestAnimationFrame(() => tocList.querySelector(".toc-item.current")?.scrollIntoView({ block: "center" }));
 }
 
 function chapterIndexForOffset(offset) {
@@ -426,6 +434,16 @@ function hideReaderControls() {
   settingsPanel.classList.add("hidden");
 }
 
+function goNextChapter() {
+  if (currentChapterIndex >= chapters.length - 1) return;
+  loadChapter(currentChapterIndex + 1, null, true, "next");
+}
+
+function goPreviousChapter() {
+  if (currentChapterIndex <= 0) return;
+  loadChapter(currentChapterIndex - 1, null, true, "previous");
+}
+
 function isSettingsOpen() {
   return !settingsPanel.classList.contains("hidden");
 }
@@ -470,11 +488,24 @@ importInput.addEventListener("change", async () => {
 });
 
 document.querySelector("#back-to-shelf").addEventListener("click", closeBook);
-document.querySelector("#previous-page").addEventListener("click", () => { goPreviousPage(); hideReaderControls(); });
-document.querySelector("#next-page").addEventListener("click", () => { goNextPage(); hideReaderControls(); });
-document.querySelector("#toc-button").addEventListener("click", () => { renderToc(); tocPanel.classList.toggle("hidden"); });
+previousChapterButton.addEventListener("click", () => { goPreviousChapter(); hideReaderControls(); });
+nextChapterButton.addEventListener("click", () => { goNextChapter(); hideReaderControls(); });
+chapterProgress.addEventListener("input", () => {
+  currentPage = Number(chapterProgress.value);
+  updateReader(false);
+});
+chapterProgress.addEventListener("change", () => updateReader(true));
+document.querySelector("#toc-button").addEventListener("click", () => {
+  const willOpen = tocPanel.classList.contains("hidden");
+  settingsPanel.classList.add("hidden");
+  tocPanel.classList.toggle("hidden", !willOpen);
+  if (willOpen) renderToc();
+});
 document.querySelector("#close-toc").addEventListener("click", () => tocPanel.classList.add("hidden"));
-document.querySelector("#settings-button").addEventListener("click", () => settingsPanel.classList.toggle("hidden"));
+document.querySelector("#settings-button").addEventListener("click", () => {
+  tocPanel.classList.add("hidden");
+  settingsPanel.classList.toggle("hidden");
+});
 document.querySelector("#close-settings").addEventListener("click", () => settingsPanel.classList.add("hidden"));
 
 ["click", "pointerdown", "pointerup"].forEach((eventName) => {
@@ -484,8 +515,9 @@ document.querySelector("#close-settings").addEventListener("click", () => settin
 tocPanel.addEventListener("click", (event) => {
   const chapterButton = event.target.closest("[data-chapter-index]");
   if (chapterButton) {
+    const selectedIndex = Number(chapterButton.dataset.chapterIndex);
     tocPanel.classList.add("hidden");
-    loadChapter(Number(chapterButton.dataset.chapterIndex), null, true);
+    if (selectedIndex !== currentChapterIndex) loadChapter(selectedIndex, null, true);
     hideReaderControls();
   }
 });
@@ -558,5 +590,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=6").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=7").catch(() => {});
 }

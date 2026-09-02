@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="./apple-touch-icon-v9.png" sizes="180x180" />
     <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-v9.png" />
     <title>书房</title>
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body>
     <main id="app-view" class="app-view">
@@ -42,16 +42,8 @@
         <header class="reader-header">
           <button id="back-to-shelf" class="icon-button" aria-label="返回书架">←</button>
           <div class="reader-heading"><strong id="reader-book-title"></strong><span id="reader-chapter-title"></span></div>
-          <div class="reader-actions">
-            <button id="toc-button" class="icon-button" aria-label="打开目录">☷</button>
-            <button id="settings-button" class="icon-button" aria-label="阅读设置">
-              <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 7h6m4 0h6M4 17h10m4 0h2M10 4v6m4 4v6" />
-              </svg>
-            </button>
-          </div>
+          <span class="reader-header-spacer" aria-hidden="true"></span>
         </header>
-        <div class="reader-minimal-header" aria-hidden="true"><span id="reader-minimal-chapter"></span></div>
         <aside id="toc-panel" class="toc-panel hidden" aria-label="目录">
           <div class="panel-heading"><strong>目录</strong><button id="close-toc" class="text-button">关闭</button></div>
           <div id="toc-list" class="toc-list"></div>
@@ -62,9 +54,24 @@
         <footer class="reader-footer">
           <div class="reader-reading-status" aria-live="off"><span id="reader-current-time"></span><span id="reader-page-status">本章 0 / 0 页</span></div>
           <div class="reader-footer-controls">
-            <button id="previous-page" class="page-control" aria-label="上一页">← 上一页</button>
-            <div class="progress-wrap"><div class="progress-track"><span id="progress-bar"></span></div><span id="progress-text">0%</span></div>
-            <button id="next-page" class="page-control" aria-label="下一页">下一页 →</button>
+            <div class="chapter-navigation">
+              <button id="previous-chapter" class="chapter-control" aria-label="上一章">上一章</button>
+              <div class="progress-wrap">
+                <input id="chapter-progress" class="chapter-progress" type="range" min="0" max="1" value="0" step="1" aria-label="本章阅读进度" />
+                <span id="progress-text">本章 1 / 1 页 · 全书 0%</span>
+              </div>
+              <button id="next-chapter" class="chapter-control" aria-label="下一章">下一章</button>
+            </div>
+            <div class="reader-tools">
+              <button id="toc-button" class="reader-tool" aria-label="章节选择">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /></svg>
+                <span>章节选择</span>
+              </button>
+              <button id="settings-button" class="reader-tool" aria-label="阅读设置">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6m4 0h6M4 17h10m4 0h2M10 4v6m4 4v6" /></svg>
+                <span>设置</span>
+              </button>
+            </div>
           </div>
         </footer>
         <section id="settings-panel" class="settings-panel hidden" aria-label="阅读设置">
@@ -83,6 +90,6 @@
         </section>
       </section>
     </main>
-    <script type="module" src="./app.js?v=6"></script>
+    <script type="module" src="./app.js?v=7"></script>
   </body>
 </html>
