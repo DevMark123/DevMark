@@ -9,6 +9,7 @@ const readingPage = document.querySelector("#reading-page");
 const pageText = document.querySelector("#page-text");
 const readerBookTitle = document.querySelector("#reader-book-title");
 const readerChapterTitle = document.querySelector("#reader-chapter-title");
+const statusBarSurface = document.querySelector(".status-bar-surface");
 const readerHeader = document.querySelector(".reader-header");
 const readerReadingStatus = document.querySelector(".reader-reading-status");
 const readerFooterControls = document.querySelector(".reader-footer-controls");
@@ -158,12 +159,19 @@ function applyAppChrome(theme) {
   document.documentElement.style.backgroundColor = color;
   document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
   document.body.style.backgroundColor = color;
+  readerView.style.backgroundColor = color;
+  statusBarSurface.style.backgroundColor = color;
   readerHeader.style.backgroundImage = topGradient;
   readerReadingStatus.style.backgroundImage = bottomGradient;
   readerFooterControls.style.backgroundImage = bottomGradient;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
-  document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
-    ?.setAttribute("content", theme === "night" ? "black" : "default");
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) {
+    const refreshedThemeColor = themeColor.cloneNode();
+    refreshedThemeColor.setAttribute("content", color);
+    themeColor.replaceWith(refreshedThemeColor);
+  }
+  statusBarSurface.style.opacity = "0.99";
+  requestAnimationFrame(() => { statusBarSurface.style.opacity = "1"; });
 }
 
 function makeChapters(content) {
@@ -590,5 +598,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=7").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=8").catch(() => {});
 }

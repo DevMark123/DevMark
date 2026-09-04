@@ -73,6 +73,7 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 .delete-book { border:0; padding:8px 2px; color:#9b5d58; background:transparent; font-size:13px; }
 
 .reader-view { height:100svh; overflow:hidden; overscroll-behavior:none; color:var(--ink); background:var(--paper); }
+.status-bar-surface { position:fixed; z-index:8; top:0; right:0; left:0; height:max(env(safe-area-inset-top, 0px), 2px); background:var(--paper); pointer-events:none; }
 .reader-header { position:fixed; z-index:10; top:0; left:0; right:0; display:grid; grid-template-columns:44px minmax(0, 1fr) 44px; align-items:center; height:72px; padding: 10px max(24px, calc((100vw - 1080px) / 2)); background:linear-gradient(to bottom, var(--paper) 72%, transparent); opacity:0; pointer-events:none; transform:translateY(-105%); transition:opacity .16s ease, transform .16s ease; }
 .reader-view.controls-visible .reader-header { opacity:1; pointer-events:auto; transform:translateY(0); }
 .icon-button { width:39px; height:39px; display:inline-grid; place-items:center; border:0; border-radius:12px; color:var(--ink); background:transparent; font-size:26px; }
