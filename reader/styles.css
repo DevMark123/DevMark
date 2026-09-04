@@ -44,8 +44,11 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 .shelf-header { justify-content: space-between; min-height: 46px; }
 .wordmark { color: var(--teal); font: 600 22px var(--serif); letter-spacing: .01em; }
 .tiny-mark { display: inline-grid; place-items:center; width: 25px; height: 25px; margin-right: 4px; border-radius: 50%; color: var(--paper); background: var(--teal); font: 18px/1 var(--serif); }
-.app-version { display:inline-block; margin-left:5px; padding:2px 6px; border:1px solid var(--line); border-radius:99px; color:var(--muted-strong); font:600 12px/1.2 var(--sans); letter-spacing:.04em; vertical-align:middle; }
 .shelf-actions { gap: 13px; }
+.update-button { min-height:44px; display:inline-flex; align-items:center; gap:5px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; color:var(--muted-strong); background:transparent; font-size:12px; white-space:nowrap; }
+.update-button strong { color:var(--teal); font-size:12px; letter-spacing:.04em; }
+.update-button:hover { color:var(--teal); background:var(--teal-soft); }
+.update-button:disabled { opacity:.58; cursor:wait; }
 .text-button { border:0; padding: 7px 2px; color: var(--muted); background: transparent; font-size: 14px; }
 .text-button:hover { color: var(--teal); }
 .import-button { display:inline-flex; align-items: center; padding: 10px 13px; border: 1px solid var(--teal); border-radius: 10px; color: var(--teal); font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -144,6 +147,6 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 @media (prefers-reduced-motion: reduce) { .reading-page p.page-turn-next, .reading-page p.page-turn-previous { animation:none; } }
 
 @media (max-width: 600px) {
-  .shelf-view { width:min(100% - 32px, 1120px); padding-top:calc(env(safe-area-inset-top, 0px) + 16px); }.shelf-hero { padding:58px 0 38px; }.shelf-hero h2 { font-size:42px; }.library-count { display:none; }.book-list { grid-template-columns:1fr; }.book-cover { height:140px; }
+  .shelf-view { width:min(100% - 32px, 1120px); padding-top:calc(env(safe-area-inset-top, 0px) + 16px); }.shelf-actions { gap:8px; }.update-button { padding-inline:8px; }.import-button { padding-inline:9px; font-size:13px; }.shelf-hero { padding:58px 0 38px; }.shelf-hero h2 { font-size:42px; }.library-count { display:none; }.book-list { grid-template-columns:1fr; }.book-cover { height:140px; }
   .reader-header { grid-template-columns:44px minmax(0, 1fr) 44px; padding:calc(env(safe-area-inset-top, 0px) + 10px) 13px 10px; height:calc(env(safe-area-inset-top, 0px) + 68px); }.reader-heading strong { font-size:16px; }.reader-heading span { font-size:11px; }.reader-header-spacer, .icon-button { width:44px; height:44px; }.icon-button { font-size:22px; }.reading-page { height:100svh; padding:calc(env(safe-area-inset-top, 0px) + 10px) 18px calc(env(safe-area-inset-bottom, 0px) + 32px); }.reader-reading-status { padding-right:18px; padding-left:18px; }.reader-footer-controls { gap:10px; padding:12px 14px calc(env(safe-area-inset-bottom, 0px) + 10px); }.chapter-navigation { grid-template-columns:54px minmax(0, 1fr) 54px; gap:8px; }.chapter-control { min-width:54px; font-size:13px; }.progress-wrap { font-size:11px; }.settings-panel { padding:8px 20px calc(env(safe-area-inset-bottom, 0px) + 22px); }.theme-row { gap:24px; }
 }

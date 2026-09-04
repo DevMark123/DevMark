@@ -13,14 +13,15 @@
     <link rel="apple-touch-icon" href="./apple-touch-icon-v9.png" sizes="180x180" />
     <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-v9.png" />
     <title>书房</title>
-    <link rel="stylesheet" href="./styles.css?v=7" />
+    <link rel="stylesheet" href="./styles.css?v=8" />
   </head>
   <body>
     <main id="app-view" class="app-view">
       <section id="shelf-view" class="shelf-view">
         <header class="shelf-header">
-          <div class="wordmark"><span class="tiny-mark">⌁</span> 书房 <span class="app-version" aria-label="当前版本 v10">v10</span></div>
+          <div class="wordmark"><span class="tiny-mark">⌁</span> 书房</div>
           <div class="shelf-actions">
+            <button id="check-update" class="update-button" type="button" aria-label="当前版本 v11，检查更新"><strong id="app-version">v11</strong><span id="update-action">检查更新</span></button>
             <label class="import-button" for="book-import">导入 TXT<input id="book-import" type="file" accept=".txt,text/plain" /></label>
           </div>
         </header>
@@ -91,6 +92,6 @@
         </section>
       </section>
     </main>
-    <script type="module" src="./app.js?v=10"></script>
+    <script type="module" src="./app.js?v=11"></script>
   </body>
 </html>

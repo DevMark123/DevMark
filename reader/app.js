@@ -5,6 +5,8 @@ const bookList = document.querySelector("#book-list");
 const libraryCount = document.querySelector("#library-count");
 const importInput = document.querySelector("#book-import");
 const importMessage = document.querySelector("#import-message");
+const checkUpdateButton = document.querySelector("#check-update");
+const updateAction = document.querySelector("#update-action");
 const readingPage = document.querySelector("#reading-page");
 const pageText = document.querySelector("#page-text");
 const readerBookTitle = document.querySelector("#reader-book-title");
@@ -26,6 +28,7 @@ const fontSizeLabel = document.querySelector("#font-size-label");
 
 const DB_NAME = "devmark-reader";
 const DB_VERSION = 1;
+const APP_VERSION = 11;
 const STATE_KEY = "reader-state";
 const DEFAULT_STATE = {
   settings: { fontWeight: 400, fontSize: 21, lineHeight: 1.95, theme: "paper" },
@@ -53,6 +56,38 @@ let currentPage = 0;
 let pointerStart = null;
 let suppressPageClick = false;
 let resizeTimer = null;
+let updateFeedbackTimer = null;
+
+function showUpdateAction(message, resetAfter = 0) {
+  clearTimeout(updateFeedbackTimer);
+  updateAction.textContent = message;
+  if (resetAfter) updateFeedbackTimer = setTimeout(() => { updateAction.textContent = "检查更新"; }, resetAfter);
+}
+
+async function checkForUpdate() {
+  checkUpdateButton.disabled = true;
+  showUpdateAction("检查中…");
+  try {
+    const response = await fetch(`./version.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error("version check failed");
+    const latestVersion = Number((await response.json()).version);
+    if (!Number.isFinite(latestVersion)) throw new Error("invalid version");
+    if (latestVersion <= APP_VERSION) {
+      showUpdateAction("已是最新版", 2200);
+      return;
+    }
+    showUpdateAction(`更新到 v${latestVersion}`);
+    const registration = await navigator.serviceWorker?.getRegistration();
+    await registration?.update().catch(() => {});
+    const updateUrl = new URL("./", window.location.href);
+    updateUrl.searchParams.set("update", `${latestVersion}-${Date.now()}`);
+    window.location.replace(updateUrl.href);
+  } catch {
+    showUpdateAction("联网后重试", 2600);
+  } finally {
+    checkUpdateButton.disabled = false;
+  }
+}
 
 function updateReaderClock() {
   readerCurrentTime.textContent = new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
@@ -496,6 +531,7 @@ importInput.addEventListener("change", async () => {
 });
 
 document.querySelector("#back-to-shelf").addEventListener("click", closeBook);
+checkUpdateButton.addEventListener("click", checkForUpdate);
 previousChapterButton.addEventListener("click", () => { goPreviousChapter(); hideReaderControls(); });
 nextChapterButton.addEventListener("click", () => { goNextChapter(); hideReaderControls(); });
 chapterProgress.addEventListener("input", () => {
@@ -598,5 +634,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=10", { updateViaCache: "none" }).catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=11", { updateViaCache: "none" }).catch(() => {});
 }
