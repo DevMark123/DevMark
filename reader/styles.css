@@ -3,6 +3,7 @@
   --paper-deep: #ede4d4;
   --ink: #262721;
   --muted: #77766c;
+  --muted-strong: #66655d;
   --line: #ded7ca;
   --teal: #17443e;
   --teal-soft: #e5efeb;
@@ -43,6 +44,7 @@ h1 { margin-bottom: 12px; font: 600 clamp(42px, 8vw, 58px)/1 var(--serif); lette
 .shelf-header { justify-content: space-between; min-height: 46px; }
 .wordmark { color: var(--teal); font: 600 22px var(--serif); letter-spacing: .01em; }
 .tiny-mark { display: inline-grid; place-items:center; width: 25px; height: 25px; margin-right: 4px; border-radius: 50%; color: var(--paper); background: var(--teal); font: 18px/1 var(--serif); }
+.app-version { display:inline-block; margin-left:5px; padding:2px 6px; border:1px solid var(--line); border-radius:99px; color:var(--muted-strong); font:600 12px/1.2 var(--sans); letter-spacing:.04em; vertical-align:middle; }
 .shelf-actions { gap: 13px; }
 .text-button { border:0; padding: 7px 2px; color: var(--muted); background: transparent; font-size: 14px; }
 .text-button:hover { color: var(--teal); }
