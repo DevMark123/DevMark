@@ -12,6 +12,7 @@ const pageText = document.querySelector("#page-text");
 const readerBookTitle = document.querySelector("#reader-book-title");
 const readerChapterTitle = document.querySelector("#reader-chapter-title");
 const statusBarSurface = document.querySelector(".status-bar-surface");
+const themeRefreshMask = document.querySelector("#theme-refresh-mask");
 const readerHeader = document.querySelector(".reader-header");
 const readerReadingStatus = document.querySelector(".reader-reading-status");
 const readerFooterControls = document.querySelector(".reader-footer-controls");
@@ -28,7 +29,7 @@ const fontSizeLabel = document.querySelector("#font-size-label");
 
 const DB_NAME = "devmark-reader";
 const DB_VERSION = 1;
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 const STATE_KEY = "reader-state";
 const DEFAULT_STATE = {
   settings: { fontWeight: 400, fontSize: 21, lineHeight: 1.95, theme: "paper" },
@@ -57,11 +58,44 @@ let pointerStart = null;
 let suppressPageClick = false;
 let resizeTimer = null;
 let updateFeedbackTimer = null;
+let chromeRefreshInProgress = false;
+let chromeRefreshTheme = "paper";
 
 function showUpdateAction(message, resetAfter = 0) {
   clearTimeout(updateFeedbackTimer);
   updateAction.textContent = message;
   if (resetAfter) updateFeedbackTimer = setTimeout(() => { updateAction.textContent = "检查更新"; }, resetAfter);
+}
+
+function remountReaderForChromeRefresh(theme) {
+  if (readerView.classList.contains("hidden") && !chromeRefreshInProgress) return;
+  chromeRefreshTheme = theme;
+  const color = THEME_COLORS[chromeRefreshTheme] || THEME_COLORS.paper;
+  themeRefreshMask.style.backgroundColor = color;
+  themeRefreshMask.classList.remove("hidden");
+  if (chromeRefreshInProgress) return;
+  chromeRefreshInProgress = true;
+
+  requestAnimationFrame(() => {
+    readerView.classList.add("hidden");
+    shelfView.classList.remove("hidden");
+    document.body.classList.remove("reading-mode");
+    applyAppChrome("paper");
+    void document.documentElement.offsetHeight;
+
+    requestAnimationFrame(() => {
+      shelfView.classList.add("hidden");
+      readerView.classList.remove("hidden");
+      document.body.classList.add("reading-mode");
+      applyAppChrome(chromeRefreshTheme);
+      void readerView.offsetHeight;
+
+      requestAnimationFrame(() => {
+        themeRefreshMask.classList.add("hidden");
+        chromeRefreshInProgress = false;
+      });
+    });
+  });
 }
 
 async function checkForUpdate() {
@@ -566,16 +600,17 @@ tocPanel.addEventListener("click", (event) => {
   }
 });
 
-function updateSetting(change) {
+function updateSetting(change, refreshChrome = false) {
   change();
   applySettings();
   repaginateCurrentChapter();
   saveState().catch(() => {});
+  if (refreshChrome) remountReaderForChromeRefresh(state.settings.theme);
 }
 
 document.querySelectorAll("[data-weight]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.fontWeight = Number(button.dataset.weight); })));
 document.querySelectorAll("[data-line]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.lineHeight = Number(button.dataset.line); })));
-document.querySelectorAll("[data-theme]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.theme = button.dataset.theme; })));
+document.querySelectorAll("[data-theme]").forEach((button) => button.addEventListener("click", () => updateSetting(() => { state.settings.theme = button.dataset.theme; }, true)));
 document.querySelector("#decrease-font").addEventListener("click", () => updateSetting(() => { state.settings.fontSize = Math.max(15, state.settings.fontSize - 1); }));
 document.querySelector("#increase-font").addEventListener("click", () => updateSetting(() => { state.settings.fontSize = Math.min(32, state.settings.fontSize + 1); }));
 
@@ -634,5 +669,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=11", { updateViaCache: "none" }).catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=12", { updateViaCache: "none" }).catch(() => {});
 }

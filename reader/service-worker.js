@@ -1,5 +1,5 @@
-const CACHE = "devmark-reader-v11";
-const SHELL = ["./", "./index.html", "./styles.css?v=8", "./app.js?v=11", "./manifest.webmanifest?v=2", "./apple-touch-icon-v9.png", "./app-icon-192.png?v=2", "./app-icon-512.png?v=2"];
+const CACHE = "devmark-reader-v12";
+const SHELL = ["./", "./index.html", "./styles.css?v=9", "./app.js?v=12", "./manifest.webmanifest?v=2", "./apple-touch-icon-v9.png", "./app-icon-192.png?v=2", "./app-icon-512.png?v=2"];
 const INDEX_URL = new URL("./index.html", self.registration.scope).href;
 
 self.addEventListener("install", (event) => {

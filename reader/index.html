@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="./apple-touch-icon-v9.png" sizes="180x180" />
     <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-v9.png" />
     <title>书房</title>
-    <link rel="stylesheet" href="./styles.css?v=8" />
+    <link rel="stylesheet" href="./styles.css?v=9" />
   </head>
   <body>
     <main id="app-view" class="app-view">
@@ -21,7 +21,7 @@
         <header class="shelf-header">
           <div class="wordmark"><span class="tiny-mark">⌁</span> 书房</div>
           <div class="shelf-actions">
-            <button id="check-update" class="update-button" type="button" aria-label="当前版本 v11，检查更新"><strong id="app-version">v11</strong><span id="update-action">检查更新</span></button>
+            <button id="check-update" class="update-button" type="button" aria-label="当前版本 v12，检查更新"><strong id="app-version">v12</strong><span id="update-action">检查更新</span></button>
             <label class="import-button" for="book-import">导入 TXT<input id="book-import" type="file" accept=".txt,text/plain" /></label>
           </div>
         </header>
@@ -91,7 +91,8 @@
           <div class="theme-row"><button data-theme="paper" class="theme-dot paper selected" aria-label="纸白"></button><button data-theme="sepia" class="theme-dot sepia" aria-label="暖米色"></button><button data-theme="night" class="theme-dot night" aria-label="夜间"></button></div>
         </section>
       </section>
+      <div id="theme-refresh-mask" class="theme-refresh-mask hidden" aria-hidden="true"></div>
     </main>
-    <script type="module" src="./app.js?v=11"></script>
+    <script type="module" src="./app.js?v=12"></script>
   </body>
 </html>
