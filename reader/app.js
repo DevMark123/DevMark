@@ -598,5 +598,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=9").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=10", { updateViaCache: "none" }).catch(() => {});
 }
