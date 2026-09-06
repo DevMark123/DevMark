@@ -29,14 +29,14 @@ const fontSizeLabel = document.querySelector("#font-size-label");
 
 const DB_NAME = "devmark-reader";
 const DB_VERSION = 1;
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 const STATE_KEY = "reader-state";
 const DEFAULT_STATE = {
   settings: { fontWeight: 400, fontSize: 21, lineHeight: 1.95, theme: "paper" },
   progress: {}
 };
 // 每次调整目录识别时递增；已导入的书会在首次打开时自动重建目录。
-const CHAPTER_PARSER_VERSION = 2;
+const CHAPTER_PARSER_VERSION = 3;
 const TEXT_NORMALIZATION_VERSION = 1;
 const THEME_COLORS = {
   paper: "#f6f1e7",
@@ -44,7 +44,7 @@ const THEME_COLORS = {
   night: "#202321"
 };
 const MARKDOWN_HEADING_PATTERN = /^[\t \u3000]*#{1,6}[\t \u3000]+(.{1,120}?)[\t \u3000]*$/gm;
-const PLAIN_CHAPTER_PATTERN = /^[\t \u3000]*(第[0-9零一二三四五六七八九十百千万两]+[章节卷回].{0,80}|(?:楔子|序章|终章|番外|后记|完本感言).{0,80})[\t \u3000]*$/gm;
+const PLAIN_CHAPTER_PATTERN = /^[\t \u3000]*(?:[\p{Extended_Pictographic}\uFE0F\u200D]+[\t \u3000]*)?(第[0-9零一二三四五六七八九十百千万两]+[章节回].{0,80}|第[0-9零一二三四五六七八九十百千万两]+卷(?:[\t \u3000]+.{1,80})?|(?:楔子|序章|终章|番外|后记|完本感言).{0,80})[\t \u3000]*$/gmu;
 
 let databasePromise;
 let state = structuredClone(DEFAULT_STATE);
@@ -669,5 +669,5 @@ async function boot() {
 boot();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js?v=12", { updateViaCache: "none" }).catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js?v=13", { updateViaCache: "none" }).catch(() => {});
 }
